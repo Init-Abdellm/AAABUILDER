@@ -1,0 +1,9 @@
+{
+  "recommendations": [
+    "ms-vscode.vscode-yaml",
+    "PKief.material-icon-theme",
+    "bradlc.vscode-tailwindcss",
+    "esbenp.prettier-vscode",
+    "ms-vscode.vscode-typescript-next"
+  ]
+}

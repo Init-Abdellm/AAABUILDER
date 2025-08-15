@@ -1,0 +1,21 @@
+{
+  "name": "aaabuilder-icons",
+  "displayName": "AAABuilder Icons",
+  "description": "Custom icons for AAABuilder .agent files",
+  "version": "1.0.0",
+  "engines": {
+    "vscode": "^1.60.0"
+  },
+  "categories": [
+    "Themes"
+  ],
+  "contributes": {
+    "iconThemes": [
+      {
+        "id": "aaabuilder-icons",
+        "label": "AAABuilder Icons",
+        "path": "./icons.json"
+      }
+    ]
+  }
+}
