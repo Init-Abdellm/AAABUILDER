@@ -1,0 +1,90 @@
+@agent webhook-processor
+version 1.0
+
+trigger http POST /webhook
+
+secret SLACK_TOKEN=env:SLACK_WEBHOOK_URL
+
+var event_type=input.type
+var payload=input.data
+var source=input.source
+var timestamp=input.timestamp
+
+step validate:
+kind function
+when payload
+script """
+// Validate incoming webhook payload
+function validate(payload) {
+  if (!payload || typeof payload !== 'object') {
+    throw new Error('Invalid payload format');
+  }
+  
+  // Add timestamp if missing
+  if (!payload.timestamp) {
+    payload.timestamp = new Date().toISOString();
+  }
+  
+  return {
+    isValid: true,
+    normalized: payload,
+    receivedAt: new Date().toISOString()
+  };
+}
+
+return validate(context.vars.payload);
+"""
+save validation_result
+
+step process:
+kind llm
+provider openai
+model gpt-4o
+retries 2
+timeout_ms 25000
+prompt """
+Process this webhook data and extract key insights:
+
+Event Type: {event_type}
+Source: {source}
+Timestamp: {timestamp}
+Payload: {payload}
+
+Tasks:
+1. Summarize the key information
+2. Identify any issues or anomalies
+3. Suggest appropriate actions
+4. Format for human readability
+
+Provide a structured analysis with actionable insights.
+"""
+save analysis
+
+step notify:
+kind http
+action POST
+url {SLACK_TOKEN}
+headers {"Content-Type": "application/json"}
+body {
+  "text": "🔔 Webhook Processed",
+  "blocks": [
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*Webhook Event Processed*\n\n*Type:* {event_type}\n*Source:* {source}\n*Analysis:* {analysis}"
+      }
+    }
+  ]
+}
+save notification_result
+
+output {
+  "status": "processed",
+  "event_type": "{event_type}",
+  "analysis": "{analysis}",
+  "notification_sent": true,
+  "processed_at": "{validation_result.receivedAt}"
+}
+
+@end

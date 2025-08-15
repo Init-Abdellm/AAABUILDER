@@ -1,0 +1,122 @@
+@agent lead-scorer
+version 1.0
+
+trigger http POST /score-lead
+
+secret CRM_API=env:CRM_API_KEY
+secret OPENAI=env:OPENAI_KEY
+
+var email=input.email
+var company=input.company
+var industry=input.industry
+var role=input.role
+var source=input.source
+var interaction_data=input.interactions
+
+step enrich:
+kind http
+action GET
+url https://api.clearbit.com/v2/people/find?email={email}
+headers {"Authorization": "Bearer {CRM_API}"}
+save enriched_data
+
+step analyze:
+kind llm
+provider openai
+model gpt-4o
+retries 3
+timeout_ms 40000
+prompt """
+Analyze this lead and provide a comprehensive scoring assessment:
+
+Lead Information:
+- Email: {email}
+- Company: {company}
+- Industry: {industry}
+- Role: {role}
+- Source: {source}
+- Enriched Data: {enriched_data}
+- Interaction History: {interaction_data}
+
+Scoring Criteria:
+1. **Company Fit (0-25 points)**
+   - Company size and revenue
+   - Industry alignment
+   - Technology stack compatibility
+   - Geographic location
+
+2. **Role Authority (0-25 points)**
+   - Decision making power
+   - Budget authority
+   - Department influence
+   - Seniority level
+
+3. **Engagement Level (0-25 points)**
+   - Interaction frequency
+   - Content engagement
+   - Response time
+   - Meeting attendance
+
+4. **Timing & Intent (0-25 points)**
+   - Buying signals
+   - Timeline indicators
+   - Pain points identified
+   - Current solutions evaluation
+
+Return JSON format:
+{
+  "total_score": 85,
+  "grade": "A",
+  "scores": {
+    "company_fit": 22,
+    "role_authority": 20,
+    "engagement": 23,
+    "timing_intent": 20
+  },
+  "insights": {
+    "strengths": ["High engagement", "Senior role"],
+    "concerns": ["Small company size"],
+    "next_actions": ["Schedule demo", "Send pricing"]
+  },
+  "priority": "high|medium|low",
+  "recommendation": "Immediate follow-up recommended"
+}
+"""
+save lead_score
+
+step prioritize:
+kind llm
+provider openai
+model gpt-4o
+retries 2
+timeout_ms 25000
+prompt """
+Based on the lead scoring results, create an action plan:
+
+Lead Score: {lead_score}
+Contact: {email} at {company}
+
+Generate a prioritized action plan with:
+1. **Immediate Actions** (next 24 hours)
+2. **Short-term Actions** (next 7 days)
+3. **Follow-up Schedule** (next 30 days)
+4. **Personalization Points** for outreach
+5. **Risk Factors** to monitor
+
+Provide specific, actionable recommendations for the sales team.
+"""
+save action_plan
+
+output {
+  "lead": {
+    "email": "{email}",
+    "company": "{company}",
+    "role": "{role}"
+  },
+  "scoring": "{lead_score}",
+  "action_plan": "{action_plan}",
+  "scored_at": "{{timestamp}}",
+  "enrichment_successful": "{{enriched_data ? true : false}}"
+}
+
+@end

@@ -21,6 +21,10 @@ args = "AAAB CLI Server"
 task = "workflow.run"
 args = "aaab_test"
 
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "AAAB HTTP Server"
+
 [[workflows.workflow]]
 name = "AAAB CLI Server"
 author = "agent"
@@ -39,3 +43,19 @@ author = "agent"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "npm install && node bin/aaab.js run examples/hello.agent --input '{\"name\":\"Alex\"}' --debug"
+
+[[workflows.workflow]]
+name = "AAAB HTTP Server"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "node bin/aaab.js serve --port 5000 --agents-dir ./agents --watch"
+waitForPort = 5000
+
+[workflows.workflow.metadata]
+outputType = "webview"
+
+[[ports]]
+localPort = 5000
+externalPort = 80

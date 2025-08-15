@@ -1,0 +1,82 @@
+@agent sentiment-analyzer
+version 1.0
+
+trigger http POST /analyze
+
+secret OPENAI=env:OPENAI_KEY
+
+var text=input.text
+var source=input.source
+var metadata=input.metadata
+
+step analyze:
+kind llm
+provider openai
+model gpt-4o
+retries 3
+timeout_ms 30000
+prompt """
+Perform comprehensive sentiment analysis on the following text:
+
+Text: "{text}"
+Source: {source}
+
+Provide a detailed analysis including:
+
+1. **Overall Sentiment**: Positive, Negative, Neutral (with confidence score 0-1)
+2. **Emotional Tone**: Joy, Anger, Sadness, Fear, Surprise, Disgust, etc.
+3. **Key Phrases**: Extract the most sentiment-bearing phrases
+4. **Intensity**: Low, Medium, High
+5. **Subjectivity**: Objective vs Subjective (0-1 scale)
+6. **Topics**: Main topics or themes discussed
+7. **Context Considerations**: Cultural, temporal, or domain-specific factors
+
+Return the analysis in JSON format with the following structure:
+{
+  "sentiment": "positive|negative|neutral",
+  "confidence": 0.95,
+  "emotions": ["joy", "excitement"],
+  "intensity": "high",
+  "subjectivity": 0.8,
+  "key_phrases": ["amazing experience", "highly recommend"],
+  "topics": ["product quality", "customer service"],
+  "score": 0.8,
+  "reasoning": "Detailed explanation of the analysis"
+}
+"""
+save sentiment_analysis
+
+step insights:
+kind llm
+provider openai
+model gpt-4o
+retries 2
+timeout_ms 20000
+prompt """
+Based on this sentiment analysis, provide actionable insights:
+
+Analysis: {sentiment_analysis}
+Original Text: {text}
+Source: {source}
+
+Generate insights for:
+1. **Business Impact**: How this sentiment affects business metrics
+2. **Action Items**: Specific steps to take based on this sentiment
+3. **Risk Assessment**: Potential risks or opportunities
+4. **Response Strategy**: How to appropriately respond
+5. **Trends**: If this indicates broader patterns
+
+Provide practical, actionable recommendations.
+"""
+save insights
+
+output {
+  "analysis": "{sentiment_analysis}",
+  "insights": "{insights}",
+  "source": "{source}",
+  "processed_at": "{{timestamp}}",
+  "text_length": "{{text.length}}",
+  "metadata": "{metadata}"
+}
+
+@end

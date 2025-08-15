@@ -1,0 +1,57 @@
+@agent intelligent-chatbot
+version 1.0
+
+trigger http POST /chat
+
+secret OPENAI=env:OPENAI_KEY
+
+var message=input.message
+var context=input.context
+var user_id=input.user_id
+
+step memory:
+kind llm
+provider openai
+model gpt-4o
+retries 3
+timeout_ms 30000
+prompt """
+You are an intelligent chatbot assistant. Based on the conversation context and the new message, provide a helpful, accurate, and engaging response.
+
+Previous Context: {context}
+User ID: {user_id}
+New Message: {message}
+
+Guidelines:
+- Be helpful and informative
+- Maintain conversation continuity 
+- Adapt your tone to the user's style
+- Ask clarifying questions when needed
+- Provide actionable advice when appropriate
+
+Respond naturally and conversationally.
+"""
+save conversation_response
+
+step enhance:
+kind llm
+provider openai
+model gpt-4o
+retries 2
+timeout_ms 20000
+prompt """
+Review this chatbot response and enhance it with:
+1. More engaging language
+2. Relevant follow-up questions
+3. Additional helpful context if needed
+
+Original Response: {conversation_response}
+User Message: {message}
+
+Provide an improved version that feels more natural and helpful.
+"""
+save enhanced_response
+
+output enhanced_response
+
+@end

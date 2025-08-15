@@ -1,0 +1,11 @@
+version: '3.8'
+services:
+  aaab:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - ./agents:/app/agents:ro
+    restart: unless-stopped

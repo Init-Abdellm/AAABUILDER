@@ -1,0 +1,117 @@
+@agent price-tracker
+version 1.0
+
+trigger http POST /track-price
+
+secret NOTIFICATION_WEBHOOK=env:SLACK_WEBHOOK_URL
+
+var product_url=input.url
+var target_price=input.target_price
+var user_email=input.email
+var product_name=input.name
+
+step fetch:
+kind http
+action GET
+url {product_url}
+headers {"User-Agent": "Mozilla/5.0 (compatible; AAAB-PriceTracker/1.0)"}
+save page_content
+
+step extract:
+kind llm
+provider openai
+model gpt-4o
+retries 3
+timeout_ms 40000
+prompt """
+Extract pricing information from this e-commerce page content:
+
+URL: {product_url}
+Page Content: {page_content}
+
+Tasks:
+1. Find the current price (look for price indicators, currency symbols)
+2. Extract product name/title
+3. Check for any discounts or sale information
+4. Identify stock status
+5. Extract any relevant product details
+
+Return JSON format:
+{
+  "current_price": 29.99,
+  "currency": "USD",
+  "product_name": "Product Name",
+  "in_stock": true,
+  "discount_info": "20% off",
+  "original_price": 37.49,
+  "last_updated": "timestamp"
+}
+
+If price cannot be found, set current_price to null and explain why.
+"""
+save price_data
+
+step evaluate:
+kind llm
+provider openai
+model gpt-4o
+retries 2
+timeout_ms 25000
+prompt """
+Evaluate this price tracking result:
+
+Target Price: ${target_price}
+Current Price Data: {price_data}
+Product: {product_name}
+
+Tasks:
+1. Compare current price to target price
+2. Calculate percentage difference
+3. Determine if notification should be sent
+4. Assess price trend if possible
+5. Generate user-friendly summary
+
+Provide recommendation:
+{
+  "should_notify": true/false,
+  "price_met": true/false,
+  "savings": 7.50,
+  "percentage_saving": 20,
+  "recommendation": "Buy now - great deal!" or "Wait for better price",
+  "summary": "User-friendly explanation"
+}
+"""
+save evaluation
+
+step notify:
+kind http
+when evaluation.should_notify
+action POST
+url {NOTIFICATION_WEBHOOK}
+headers {"Content-Type": "application/json"}
+body {
+  "text": "🏷️ Price Alert!",
+  "blocks": [
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*Price Target Reached!*\n\n*Product:* {product_name}\n*Current Price:* ${price_data.current_price}\n*Target Price:* ${target_price}\n*Savings:* ${evaluation.savings}\n\n*Recommendation:* {evaluation.recommendation}\n\n<{product_url}|View Product>"
+      }
+    }
+  ]
+}
+save notification_sent
+
+output {
+  "product": "{product_name}",
+  "current_price": "{price_data.current_price}",
+  "target_price": "{target_price}",
+  "price_met": "{evaluation.price_met}",
+  "savings": "{evaluation.savings}",
+  "recommendation": "{evaluation.recommendation}",
+  "notification_sent": "{evaluation.should_notify}",
+  "tracked_at": "{{timestamp}}"
+}
+
+@end
