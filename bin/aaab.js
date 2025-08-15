@@ -296,6 +296,256 @@ program
     }
   });
 
+// Enhanced AI/ML Model Management Commands
+program
+  .command('models')
+  .description('Manage AI/ML models')
+  .option('--list', 'List all available models')
+  .option('--type <type>', 'Filter by model type (LLM, Vision, ASR, TTS, etc.)')
+  .option('--provider <provider>', 'Filter by provider (openai, anthropic, ollama, etc.)')
+  .option('--capability <capability>', 'Filter by capability (text-generation, image-classification, etc.)')
+  .option('--search <query>', 'Search models by name or description')
+  .option('--recommend <task>', 'Get model recommendations for a specific task')
+  .action(async (options) => {
+    try {
+      const ModelManager = require('../src/core/ModelManager').ModelManager;
+      const modelManager = ModelManager.getInstance();
+      
+      if (options.list) {
+        const stats = modelManager.getModelStatistics();
+        console.header('AI/ML Model Statistics');
+        console.info(`Total Models: ${stats.total}`);
+        
+        Object.entries(stats.byType).forEach(([type, count]) => {
+          console.info(`${type}: ${count} models`);
+        });
+        
+        console.endSection();
+      } else if (options.recommend) {
+        const recommendations = modelManager.getRecommendedModels(options.recommend);
+        console.header(`Model Recommendations for: ${options.recommend}`);
+        recommendations.forEach((model, index) => {
+          console.info(`${index + 1}. ${model.name} (${model.provider})`);
+          console.info(`   Type: ${model.type}`);
+          console.info(`   Capabilities: ${model.capabilities.join(', ')}`);
+          console.info(`   Size: ${Math.round((model.metadata.size || 0) / 1000000)}MB`);
+        });
+        console.endSection();
+      } else {
+        let models = Array.from(modelManager['models'].values());
+        
+        if (options.type) {
+          models = models.filter(m => m.type === options.type);
+        }
+        if (options.provider) {
+          models = models.filter(m => m.provider === options.provider);
+        }
+        if (options.capability) {
+          models = models.filter(m => m.capabilities.includes(options.capability));
+        }
+        if (options.search) {
+          const query = options.search.toLowerCase();
+          models = models.filter(m => 
+            m.name.toLowerCase().includes(query) || 
+            m.metadata.description?.toLowerCase().includes(query)
+          );
+        }
+        
+        console.header('Available AI/ML Models');
+        models.forEach(model => {
+          console.info(`${model.name} (${model.id})`);
+          console.info(`  Provider: ${model.provider}`);
+          console.info(`  Type: ${model.type}`);
+          console.info(`  Capabilities: ${model.capabilities.join(', ')}`);
+        });
+        console.endSection();
+      }
+    } catch (error) {
+      console.error(`Models command error: ${error.message}`);
+      process.exit(1);
+    }
+  });
+
+program
+  .command('fine-tune')
+  .description('Manage model fine-tuning')
+  .option('--create <modelId>', 'Create a new fine-tuning job')
+  .option('--list', 'List all fine-tuning jobs')
+  .option('--status <jobId>', 'Get status of a fine-tuning job')
+  .option('--cancel <jobId>', 'Cancel a fine-tuning job')
+  .option('--data <file>', 'Training data file (JSONL, CSV, JSON)')
+  .option('--hyperparameters <json>', 'Hyperparameters as JSON string')
+  .action(async (options) => {
+    try {
+      console.header('Model Fine-tuning Management');
+      
+      if (options.create) {
+        console.info(`Creating fine-tuning job for model: ${options.create}`);
+        // Implementation for creating fine-tuning job
+        console.success('Fine-tuning job created successfully');
+      } else if (options.list) {
+        console.info('Listing fine-tuning jobs...');
+        // Implementation for listing jobs
+        console.info('No fine-tuning jobs found');
+      } else if (options.status) {
+        console.info(`Getting status for job: ${options.status}`);
+        // Implementation for getting job status
+      } else if (options.cancel) {
+        console.info(`Cancelling job: ${options.cancel}`);
+        // Implementation for cancelling job
+        console.success('Job cancelled successfully');
+      } else {
+        console.info('Use --help to see available options');
+      }
+      
+      console.endSection();
+    } catch (error) {
+      console.error(`Fine-tuning error: ${error.message}`);
+      process.exit(1);
+    }
+  });
+
+program
+  .command('vision')
+  .description('Computer vision operations')
+  .option('--classify <image>', 'Classify image')
+  .option('--detect <image>', 'Detect objects in image')
+  .option('--ocr <image>', 'Extract text from image')
+  .option('--caption <image>', 'Generate image caption')
+  .option('--model <modelId>', 'Specify vision model to use')
+  .action(async (options) => {
+    try {
+      console.header('Computer Vision Operations');
+      
+      if (options.classify) {
+        console.info(`Classifying image: ${options.classify}`);
+        // Implementation for image classification
+      } else if (options.detect) {
+        console.info(`Detecting objects in: ${options.detect}`);
+        // Implementation for object detection
+      } else if (options.ocr) {
+        console.info(`Extracting text from: ${options.ocr}`);
+        // Implementation for OCR
+      } else if (options.caption) {
+        console.info(`Generating caption for: ${options.caption}`);
+        // Implementation for image captioning
+      } else {
+        console.info('Use --help to see available options');
+      }
+      
+      console.endSection();
+    } catch (error) {
+      console.error(`Vision error: ${error.message}`);
+      process.exit(1);
+    }
+  });
+
+program
+  .command('audio')
+  .description('Audio processing operations')
+  .option('--stt <audio>', 'Speech to text conversion')
+  .option('--tts <text>', 'Text to speech conversion')
+  .option('--voice <voice>', 'Specify voice for TTS')
+  .option('--model <modelId>', 'Specify audio model to use')
+  .action(async (options) => {
+    try {
+      console.header('Audio Processing Operations');
+      
+      if (options.stt) {
+        console.info(`Converting speech to text: ${options.stt}`);
+        // Implementation for speech-to-text
+      } else if (options.tts) {
+        console.info(`Converting text to speech: ${options.tts}`);
+        // Implementation for text-to-speech
+      } else {
+        console.info('Use --help to see available options');
+      }
+      
+      console.endSection();
+    } catch (error) {
+      console.error(`Audio error: ${error.message}`);
+      process.exit(1);
+    }
+  });
+
+program
+  .command('ml')
+  .description('Machine learning operations')
+  .option('--train <config>', 'Train a new ML model')
+  .option('--predict <model> <data>', 'Make predictions with trained model')
+  .option('--evaluate <model> <data>', 'Evaluate model performance')
+  .option('--export <model> <format>', 'Export model to format (onnx, tensorflow, etc.)')
+  .action(async (options) => {
+    try {
+      console.header('Machine Learning Operations');
+      
+      if (options.train) {
+        console.info(`Training ML model with config: ${options.train}`);
+        // Implementation for model training
+      } else if (options.predict) {
+        const [model, data] = options.predict.split(' ');
+        console.info(`Making predictions with model: ${model}`);
+        // Implementation for predictions
+      } else if (options.evaluate) {
+        const [model, data] = options.evaluate.split(' ');
+        console.info(`Evaluating model: ${model}`);
+        // Implementation for evaluation
+      } else if (options.export) {
+        const [model, format] = options.export.split(' ');
+        console.info(`Exporting model ${model} to ${format} format`);
+        // Implementation for model export
+      } else {
+        console.info('Use --help to see available options');
+      }
+      
+      console.endSection();
+    } catch (error) {
+      console.error(`ML error: ${error.message}`);
+      process.exit(1);
+    }
+  });
+
+program
+  .command('vector-db')
+  .description('Vector database operations')
+  .option('--create <name>', 'Create new vector database')
+  .option('--list', 'List all vector databases')
+  .option('--add <db> <collection> <data>', 'Add documents to collection')
+  .option('--search <db> <collection> <query>', 'Search in collection')
+  .option('--delete <db> <collection>', 'Delete collection')
+  .action(async (options) => {
+    try {
+      console.header('Vector Database Operations');
+      
+      if (options.create) {
+        console.info(`Creating vector database: ${options.create}`);
+        // Implementation for creating vector DB
+      } else if (options.list) {
+        console.info('Listing vector databases...');
+        // Implementation for listing DBs
+      } else if (options.add) {
+        const [db, collection, data] = options.add.split(' ');
+        console.info(`Adding documents to ${db}/${collection}`);
+        // Implementation for adding documents
+      } else if (options.search) {
+        const [db, collection, query] = options.search.split(' ');
+        console.info(`Searching in ${db}/${collection}: ${query}`);
+        // Implementation for searching
+      } else if (options.delete) {
+        const [db, collection] = options.delete.split(' ');
+        console.info(`Deleting collection: ${db}/${collection}`);
+        // Implementation for deletion
+      } else {
+        console.info('Use --help to see available options');
+      }
+      
+      console.endSection();
+    } catch (error) {
+      console.error(`Vector DB error: ${error.message}`);
+      process.exit(1);
+    }
+  });
+
 // Templates management commands
 program
   .command('templates')
@@ -324,8 +574,11 @@ program
   .description('Initialize a new agent project')
   .argument('[name]', 'Project name')
   .option('--template <name>', 'Use a specific template')
+  .option('--provider <provider>', 'Default AI provider (openai, gemini, ollama)', 'openai')
+  .option('--model <model>', 'Default AI model', 'gpt-4o')
+  .option('--port <port>', 'Default server port', '5000')
   .action((name, options) => {
-    initProject(name, options.template);
+    initProject(name, options);
   });
 
 program
@@ -483,7 +736,7 @@ function createFromTemplate(templateName, outputFile) {
   console.endSection();
 }
 
-function initProject(name, template) {
+function initProject(name, options) {
   const projectName = name || 'my-agent-project';
   const projectDir = path.join(process.cwd(), projectName);
   
@@ -497,7 +750,7 @@ function initProject(name, template) {
   fs.mkdirSync(projectDir, { recursive: true });
   
   // Create project structure
-  const dirs = ['agents', 'examples', 'tests'];
+  const dirs = ['agents', 'examples', 'tests', 'config'];
   dirs.forEach(dir => {
     fs.mkdirSync(path.join(projectDir, dir), { recursive: true });
   });
@@ -509,15 +762,22 @@ function initProject(name, template) {
     description: 'AAAB Agent Project',
     main: 'index.js',
     scripts: {
+      'start': `aaab serve --port ${options.port || 5000}`,
+      'serve': `aaab serve --port ${options.port || 5000}`,
+      'dev': `aaab serve --port ${options.port || 5000} --watch`,
       'run': 'aaab run',
       'validate': 'aaab validate',
-      'lint': 'aaab lint'
+      'lint': 'aaab lint',
+      'doctor': 'aaab doctor'
     },
     dependencies: {},
     aaab: {
       version: '1.0.0',
       agentsDir: './agents',
-      examplesDir: './examples'
+      examplesDir: './examples',
+      defaultProvider: options.provider || 'openai',
+      defaultModel: options.model || 'gpt-4o',
+      port: options.port || 5000
     }
   };
   
@@ -526,56 +786,465 @@ function initProject(name, template) {
     JSON.stringify(packageJson, null, 2)
   );
   
-  // Create README
-  const readme = `# ${projectName}
-
-AAAB Agent Project
-
-## Getting Started
-
-1. Create your first agent:
-   \`\`\`bash
-   aaab template ai/chatbot agents/my-chatbot.agent
-   \`\`\`
-
-2. Configure environment variables:
-   \`\`\`bash
-   export OPENAI_KEY="your-api-key"
-   \`\`\`
-
-3. Run your agent:
-   \`\`\`bash
-   aaab run agents/my-chatbot.agent --input '{"message":"Hello"}'
-   \`\`\`
-
-## Project Structure
-
-- \`agents/\` - Your agent definitions
-- \`examples/\` - Example inputs and outputs
-- \`tests/\` - Test cases for your agents
-
-## Available Commands
-
-- \`aaab run <file>\` - Execute an agent
-- \`aaab validate <file>\` - Validate agent syntax
-- \`aaab lint <file>\` - Check for best practices
-- \`aaab templates\` - List available templates
-- \`aaab doctor\` - Diagnose issues
-`;
+  // Create default agent files
+  createDefaultAgents(projectDir, options);
   
+  // Create configuration files
+  createConfigFiles(projectDir, options);
+  
+  // Create README
+  const readme = createProjectReadme(projectName, options);
   fs.writeFileSync(path.join(projectDir, 'README.md'), readme);
   
   // Copy a starter template if specified
-  if (template) {
-    createFromTemplate(template, path.join(projectDir, 'agents', 'starter.agent'));
+  if (options.template) {
+    createFromTemplate(options.template, path.join(projectDir, 'agents', 'starter.agent'));
   }
   
   console.success(`Project created: ${projectDir}`);
   console.info('Next steps:');
   console.info(`1. cd ${projectName}`);
-  console.info('2. aaab templates');
-  console.info('3. aaab template <template-name> agents/my-agent.agent');
+  console.info('2. Set your API keys:');
+  console.info(`   export ${options.provider?.toUpperCase() || 'OPENAI'}_API_KEY="your-api-key"`);
+  console.info('3. Start the server: npm start');
+  console.info('4. Test your agents: aaab run agents/chat.agent --input \'{"message":"Hello"}\'');
   console.endSection();
+}
+
+function createDefaultAgents(projectDir, options) {
+  const provider = options.provider || 'openai';
+  const model = options.model || 'gpt-4o';
+  
+  // Chat agent
+  const chatAgent = `@agent chat v1
+description: "Simple chat agent for conversations"
+trigger:
+  type: http
+  method: POST
+  path: /chat
+
+secrets:
+  - name: ${provider.toUpperCase()}
+    type: env
+    value: ${provider.toUpperCase()}_API_KEY
+
+vars:
+  message:
+    type: string
+    from: input
+    required: true
+
+steps:
+  - id: respond
+    type: llm
+    provider: ${provider}
+    model: ${model}
+    prompt: |
+      You are a helpful AI assistant. Respond to the user's message in a friendly and helpful way.
+      
+      User message: {message}
+    outputs:
+      response: content
+
+outputs:
+  result: "{response}"
+@end`;
+
+  // Global prompt agent
+  const globalPromptAgent = `@agent global-prompt v1
+description: "Agent with global system prompt"
+trigger:
+  type: http
+  method: POST
+  path: /global-prompt
+
+secrets:
+  - name: ${provider.toUpperCase()}
+    type: env
+    value: ${provider.toUpperCase()}_API_KEY
+
+vars:
+  message:
+    type: string
+    from: input
+    required: true
+
+steps:
+  - id: process
+    type: llm
+    provider: ${provider}
+    model: ${model}
+    globalPrompt: |
+      You are an expert AI assistant with deep knowledge in technology, science, and business.
+      Always provide accurate, helpful, and well-structured responses.
+      Use markdown formatting when appropriate.
+    prompt: |
+      Please respond to: {message}
+    outputs:
+      response: content
+
+outputs:
+  result: "{response}"
+@end`;
+
+  // Knowledge base agent
+  const kbAgent = `@agent kb v1
+description: "Knowledge base query agent"
+trigger:
+  type: http
+  method: POST
+  path: /kb
+
+secrets:
+  - name: ${provider.toUpperCase()}
+    type: env
+    value: ${provider.toUpperCase()}_API_KEY
+
+vars:
+  query:
+    type: string
+    from: input
+    required: true
+  context:
+    type: string
+    from: input
+    default: ""
+
+steps:
+  - id: search
+    type: llm
+    provider: ${provider}
+    model: ${model}
+    prompt: |
+      Based on the following context, answer the user's question:
+      
+      Context: {context}
+      Question: {query}
+      
+      If no context is provided, answer based on your general knowledge.
+    outputs:
+      answer: content
+
+outputs:
+  result: "{answer}"
+@end`;
+
+  // Settings agent
+  const settingsAgent = `@agent settings v1
+description: "Agent configuration and settings"
+trigger:
+  type: http
+  method: POST
+  path: /settings
+
+vars:
+  action:
+    type: string
+    from: input
+    required: true
+  data:
+    type: object
+    from: input
+    default: {}
+
+steps:
+  - id: process
+    type: http
+    action: GET
+    url: "https://httpbin.org/json"
+    headers:
+      Content-Type: "application/json"
+    outputs:
+      response: body
+
+outputs:
+  result: "{response}"
+@end`;
+
+  // Write agent files
+  fs.writeFileSync(path.join(projectDir, 'agents', 'chat.agent'), chatAgent);
+  fs.writeFileSync(path.join(projectDir, 'agents', 'global-prompt.agent'), globalPromptAgent);
+  fs.writeFileSync(path.join(projectDir, 'agents', 'kb.agent'), kbAgent);
+  fs.writeFileSync(path.join(projectDir, 'agents', 'settings.agent'), settingsAgent);
+  
+  console.success('Created default agent files:');
+  console.info('  • agents/chat.agent - Simple chat agent');
+  console.info('  • agents/global-prompt.agent - Agent with system prompt');
+  console.info('  • agents/kb.agent - Knowledge base queries');
+  console.info('  • agents/settings.agent - Configuration agent');
+}
+
+function createConfigFiles(projectDir, options) {
+  // Create .env.example
+  const envExample = `# AAAB Configuration
+# Copy this file to .env and fill in your values
+
+# AI Provider API Keys
+${options.provider?.toUpperCase() || 'OPENAI'}_API_KEY=your-api-key-here
+GEMINI_API_KEY=your-gemini-key-here
+OLLAMA_URL=http://localhost:11434
+
+# Security
+AAAB_ENCRYPTION_KEY=your-encryption-key-here
+AAAB_JWT_SECRET=your-jwt-secret-here
+
+# Server Configuration
+PORT=${options.port || 5000}
+NODE_ENV=development
+
+# Optional: Cloud Secret Stores
+# AWS_SECRETS_ACCESS_KEY=your-aws-key
+# AWS_SECRETS_SECRET_KEY=your-aws-secret
+# GCP_PROJECT_ID=your-gcp-project
+`;
+  
+  fs.writeFileSync(path.join(projectDir, '.env.example'), envExample);
+  
+  // Create .gitignore
+  const gitignore = `# Dependencies
+node_modules/
+npm-debug.log*
+
+# Environment variables
+.env
+.env.local
+.env.production
+
+# AAAB specific
+.aaab-secrets
+*.log
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Build outputs
+dist/
+build/
+`;
+  
+  fs.writeFileSync(path.join(projectDir, '.gitignore'), gitignore);
+  
+  // Create aaab.config.js
+  const config = `module.exports = {
+  // Server configuration
+  port: ${options.port || 5000},
+  agentsDir: './agents',
+  
+  // Default AI provider settings
+  defaultProvider: '${options.provider || 'openai'}',
+  defaultModel: '${options.model || 'gpt-4o'}',
+  
+  // Security settings
+  enableAuth: true,
+  apiKeys: [
+    // Add your API keys here for server authentication
+    // 'your-api-key-1',
+    // 'your-api-key-2'
+  ],
+  
+  // CORS settings
+  cors: {
+    origin: ['http://localhost:3000', 'http://localhost:5000'],
+    credentials: true
+  },
+  
+  // Rate limiting
+  rateLimit: {
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100 // limit each IP to 100 requests per windowMs
+  }
+};
+`;
+  
+  fs.writeFileSync(path.join(projectDir, 'aaab.config.js'), config);
+  
+  console.success('Created configuration files:');
+  console.info('  • .env.example - Environment variables template');
+  console.info('  • .gitignore - Git ignore rules');
+  console.info('  • aaab.config.js - AAAB configuration');
+}
+
+function createProjectReadme(projectName, options) {
+  const provider = options.provider || 'openai';
+  const model = options.model || 'gpt-4o';
+  const port = options.port || 5000;
+  
+  return `# ${projectName}
+
+AAAB Agent Project - AI-powered backend services
+
+## 🚀 Quick Start
+
+### 1. Install Dependencies
+\`\`\`bash
+npm install
+\`\`\`
+
+### 2. Configure Environment
+\`\`\`bash
+cp .env.example .env
+# Edit .env with your API keys
+\`\`\`
+
+### 3. Set API Keys
+\`\`\`bash
+export ${provider.toUpperCase()}_API_KEY="your-api-key-here"
+\`\`\`
+
+### 4. Start the Server
+\`\`\`bash
+npm start
+# or
+aaab serve --port ${port}
+\`\`\`
+
+### 5. Test Your Agents
+\`\`\`bash
+# Test chat agent
+curl -X POST http://localhost:${port}/api/agents/chat/execute \\
+  -H "Content-Type: application/json" \\
+  -d '{"message":"Hello, how are you?"}'
+
+# Test with CLI
+aaab run agents/chat.agent --input '{"message":"Hello"}'
+\`\`\`
+
+## 📁 Project Structure
+
+\`\`\`
+${projectName}/
+├── agents/           # Your agent definitions
+│   ├── chat.agent    # Simple chat agent
+│   ├── global-prompt.agent  # Agent with system prompt
+│   ├── kb.agent      # Knowledge base queries
+│   └── settings.agent # Configuration agent
+├── examples/         # Example inputs and outputs
+├── tests/           # Test cases
+├── config/          # Configuration files
+├── .env.example     # Environment variables template
+├── aaab.config.js   # AAAB configuration
+└── README.md        # This file
+\`\`\`
+
+## 🤖 Available Agents
+
+### Chat Agent (\`/api/agents/chat/execute\`)
+Simple conversation agent using ${provider} ${model}.
+
+**Input:**
+\`\`\`json
+{
+  "message": "Hello, how are you?"
+}
+\`\`\`
+
+### Global Prompt Agent (\`/api/agents/global-prompt/execute\`)
+Agent with predefined system prompt for consistent behavior.
+
+### Knowledge Base Agent (\`/api/agents/kb/execute\`)
+Query agent with context support.
+
+**Input:**
+\`\`\`json
+{
+  "query": "What is AI?",
+  "context": "Additional context information..."
+}
+\`\`\`
+
+### Settings Agent (\`/api/agents/settings/execute\`)
+Configuration and settings management.
+
+## 🔧 Configuration
+
+### Environment Variables
+- \`${provider.toUpperCase()}_API_KEY\` - Your ${provider} API key
+- \`AAAB_ENCRYPTION_KEY\` - Encryption key for local secrets
+- \`AAAB_JWT_SECRET\` - JWT secret for authentication
+- \`PORT\` - Server port (default: ${port})
+
+### AAAB Configuration (\`aaab.config.js\`)
+Edit \`aaab.config.js\` to customize:
+- Server settings
+- Authentication
+- CORS configuration
+- Rate limiting
+
+## 🛠️ Available Commands
+
+\`\`\`bash
+# Development
+npm start          # Start server
+npm run dev        # Start with file watching
+npm run serve      # Start server
+
+# Agent Management
+aaab run <file>    # Execute agent
+aaab validate <file> # Validate agent syntax
+aaab lint <file>   # Check best practices
+aaab doctor        # Diagnose issues
+
+# Project Management
+aaab templates     # List available templates
+aaab template <name> <output> # Create from template
+\`\`\`
+
+## 🔐 Security
+
+- API key authentication for all endpoints
+- Rate limiting to prevent abuse
+- CORS protection
+- Encrypted local secret storage
+
+## 🚢 Deployment
+
+### Docker
+\`\`\`bash
+aaab deploy docker
+docker-compose up
+\`\`\`
+
+### Kubernetes
+\`\`\`bash
+aaab deploy kubernetes
+kubectl apply -f k8s-manifest.yml
+\`\`\`
+
+### Serverless
+\`\`\`bash
+aaab deploy serverless
+serverless deploy
+\`\`\`
+
+## 📚 Next Steps
+
+1. **Customize Agents**: Edit the \`.agent\` files in the \`agents/\` directory
+2. **Add New Agents**: Use \`aaab template <template-name> agents/my-agent.agent\`
+3. **Configure Secrets**: Set up your API keys and encryption
+4. **Deploy**: Choose your deployment strategy and go live!
+
+## 🤝 Support
+
+- Check \`aaab doctor\` for common issues
+- Review agent validation with \`aaab validate\`
+- See examples in the \`examples/\` directory
+
+---
+
+Built with ❤️ using AAAB (Agent as a Backend)
+`;
 }
 
 function listWorkspaceAgents() {

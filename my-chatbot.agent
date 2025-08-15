@@ -1,5 +1,6 @@
 @agent intelligent-chatbot
 version 1.0
+icon public/z.png
 
 trigger http POST /chat
 

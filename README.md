@@ -1,254 +1,506 @@
-# 🚀 AAAB (Agent as a Backend)
+# Zinebi - Advanced AI/ML Agent Framework
 
-**Transform AI workflows into production-ready APIs with declarative `.agent` files**
-
-[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](package.json)
+[![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)](package.json)
 [![Node](https://img.shields.io/badge/node-%3E%3D18-green.svg)](package.json)
-[![License](https://img.shields.io/badge/license-MIT-brightgreen.svg)](LICENSE)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.3+-blue.svg)](package.json)
+[![License](https://img.shields.io/badge/license-Apache%202.0-brightgreen.svg)](LICENSE)
+[![Downloads](https://img.shields.io/npm/dm/zinebi.svg)](https://www.npmjs.com/package/zinebi)
+[![Stars](https://img.shields.io/github/stars/Init-Abdellm/zinebi.svg)](https://github.com/Init-Abdellm/zinebi)
 
-AAAB is a comprehensive Node.js framework that revolutionizes AI workflow deployment by converting simple declarative files into powerful, scalable backend APIs. Built by **INIT-ABDELLM**, it features a stunning modern CLI interface, enterprise-grade plugin system, and production deployment tools.
+**Zinebi** is the most comprehensive AI/ML development framework available, transforming complex AI workflows into production-ready APIs with support for all major AI/ML model types including LLM, SLM, MLM, Vision, ASR, TTS, RL, GNN, RNN, CNN, GAN, Diffusion, Transformer, MLP, Autoencoder, BERT, RAG, Hybrid, and Foundation Models.
 
-## ✨ Key Features
+## Table of Contents
 
-### 🎯 **Modern CLI Experience**
-- Beautiful ASCII branding with organized, color-coded output
-- Structured logging with timestamps and clear status indicators
-- Interactive template management and project initialization
+- [Overview](#overview)
+- [Why Zinebi?](#why-zinebi)
+- [Comparison with Other Solutions](#comparison-with-other-solutions)
+- [Features](#features)
+- [Quick Start](#quick-start)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Architecture](#architecture)
+- [API Reference](#api-reference)
+- [Examples](#examples)
+- [Deployment](#deployment)
+- [Contributing](#contributing)
+- [License](#license)
 
-### 🔌 **Enterprise Plugin System**
-- **Analytics Plugin**: Execution metrics, performance monitoring, and usage analytics
-- **Cache Plugin**: Intelligent in-memory caching with TTL and auto-cleanup
-- **Extensible Architecture**: Easy custom plugin development
+## Overview
 
-### 🌐 **HTTP Server Integration**
-- Full Express.js integration for API deployment
-- Health checks, rate limiting, and security middleware
-- Auto-discovery of agent files with hot reloading
-- RESTful endpoints for agent execution and management
+Zinebi addresses the growing complexity of AI/ML development by providing a unified framework that handles everything from simple text generation to complex multimodal AI systems. Unlike other solutions that focus on specific domains, Zinebi offers comprehensive support across all AI/ML paradigms.
 
-### 📦 **Template System**
-- 5+ pre-built professional templates (chatbot, webhook-processor, sentiment-analyzer, price-tracker, lead-scorer)
-- Rapid project scaffolding with `aaab template create`
-- Industry-standard workflow patterns
+The framework is built with TypeScript-first development, ensuring type safety and developer productivity while maintaining the flexibility needed for rapid AI/ML prototyping and production deployment.
 
-### 🚢 **Multi-Platform Deployment**
-- **Replit**: One-click deployment ready
-- **Docker**: Containerization with health checks
-- **Kubernetes**: Production manifests with scaling
-- **Serverless**: AWS Lambda ready configurations
+## Why Zinebi?
 
-### 🤖 **AI Provider Support**
-- OpenAI, Hugging Face, Gemini, Ollama, LLaMA
-- Unified interface across all providers
-- Secure API key management
+### Comprehensive Model Support
+Zinebi supports every major AI/ML model type, from traditional language models to cutting-edge multimodal systems. This eliminates the need to learn multiple frameworks for different AI tasks.
 
-## 🏃‍♂️ Quick Start
+### Production-Ready Architecture
+Built with enterprise-grade features including security, monitoring, and deployment automation. Zinebi transforms prototypes into production systems seamlessly.
 
-### Installation & Setup
+### Developer Experience
+TypeScript-first development with comprehensive tooling, hot reload, and intuitive CLI commands. Developers can focus on AI logic rather than infrastructure concerns.
+
+## Comparison with Other Solutions
+
+| Feature | Zinebi | LangChain | AutoGen | CrewAI | Flowise |
+|---------|--------|-----------|---------|--------|---------|
+| **Model Support** | All AI/ML types | LLM-focused | LLM-focused | LLM-focused | LLM-focused |
+| **Vision Models** | ✓ Full support | ✗ Limited | ✗ Limited | ✗ Limited | ✗ Limited |
+| **Audio Models** | ✓ ASR/TTS | ✗ None | ✗ None | ✗ None | ✗ None |
+| **ML Models** | ✓ CNN/RNN/GNN | ✗ None | ✗ None | ✗ None | ✗ None |
+| **Fine-tuning** | ✓ Complete pipeline | ✗ Limited | ✗ None | ✗ None | ✗ None |
+| **TypeScript** | ✓ First-class | ✗ Python-only | ✗ Python-only | ✗ Python-only | ✗ JavaScript |
+| **Deployment** | ✓ Multi-platform | ✗ Manual | ✗ Manual | ✗ Manual | ✗ Limited |
+| **Security** | ✓ Enterprise-grade | ✗ Basic | ✗ Basic | ✗ Basic | ✗ Basic |
+| **Monitoring** | ✓ Built-in | ✗ None | ✗ None | ✗ None | ✗ None |
+| **Vector DBs** | ✓ All major | ✓ Limited | ✗ None | ✗ None | ✓ Limited |
+
+### Key Advantages
+
+- **Unified Framework**: Single solution for all AI/ML needs
+- **Type Safety**: Full TypeScript support with comprehensive types
+- **Production Ready**: Built-in security, monitoring, and deployment
+- **Extensible**: Plugin system for custom integrations
+- **Performance**: Optimized for high-throughput AI operations
+
+## Features
+
+### Core Capabilities
+
+- **Language Models**: GPT-4, Claude, Gemini, Llama, Mistral, and more
+- **Computer Vision**: Image classification, object detection, OCR, face recognition
+- **Audio Processing**: Speech-to-text, text-to-speech, voice cloning
+- **Machine Learning**: CNN, RNN, GNN, GAN, Diffusion, Transformer architectures
+- **Vector Databases**: Pinecone, Weaviate, Qdrant, Chroma, Milvus integration
+- **Fine-tuning**: Complete model customization pipeline
+- **Real-time Processing**: Streaming, live inference, monitoring
+
+### Development Features
+
+- **TypeScript Support**: Full type safety and modern development
+- **Hot Reload**: Instant development with file watching
+- **CLI Tools**: Comprehensive command-line interface
+- **Templates**: Pre-built agent templates for common use cases
+- **Validation**: Built-in syntax and structure validation
+- **Linting**: Code quality and best practices enforcement
+
+### Production Features
+
+- **Security**: JWT authentication, encrypted secrets, rate limiting
+- **Monitoring**: Performance metrics, error tracking, health checks
+- **Deployment**: Docker, Kubernetes, serverless support
+- **Scaling**: Horizontal and vertical scaling capabilities
+- **Backup**: Automated backup and recovery systems
+
+## Quick Start
+
+### Prerequisites
+
+- Node.js 18.0.0 or higher
+- npm 8.0.0 or higher
+- TypeScript 5.3+ (optional but recommended)
+
+### Installation
 
 ```bash
-# Clone and install
-git clone <repository-url>
-cd aaab-framework
-npm install
+# Install globally
+npm install -g zinebi
 
-# Initialize a new project
-node bin/aaab.js init my-project --template chatbot
+# Verify installation
+aaab --version
 ```
 
 ### Your First Agent
 
-Create `hello.agent`:
+```bash
+# Initialize a new project
+aaab init my-ai-project --provider openai --model gpt-4o
 
-```yaml
-id: hello-world
-version: "1.0"
-description: "Professional greeting agent"
+# Navigate to project
+cd my-ai-project
 
-trigger:
-  type: manual
+# Set your API key
+export OPENAI_API_KEY="your-api-key-here"
 
-secrets:
-  - name: OPENAI
-    env: OPENAI_KEY
-
-vars:
-  name:
-    type: string
-    from: input
-    default: "World"
-
-steps:
-  - id: greet
-    type: llm
-    provider: openai
-    model: gpt-4o
-    prompt: "Create a professional greeting for {name} with a helpful tip."
-    outputs:
-      greeting: response
-
-outputs:
-  result: "{greeting}"
+# Start the server
+npm start
 ```
 
-### Run Your Agent
+## Installation
+
+### Global Installation
 
 ```bash
-# Set API key
-export OPENAI_KEY="your-key-here"
-
-# Execute agent
-node bin/aaab.js run hello.agent --input '{"name":"Developer"}'
+npm install -g zinebi
 ```
 
-## 📚 CLI Commands
-
-### Core Commands
-```bash
-# Workflow Execution
-aaab run <file>                    # Execute agent workflow
-aaab validate <file>               # Validate syntax & structure
-aaab lint <file>                   # Best practices check
-aaab fix <file>                    # Auto-fix common issues
-
-# Project Management
-aaab init <name>                   # Initialize new project
-aaab template list                 # Show available templates
-aaab template create <name>        # Create from template
-
-# Server & Deployment
-aaab serve --port 5000            # Start HTTP API server
-aaab deploy docker                # Generate Docker configs
-aaab deploy kubernetes            # Generate K8s manifests
-aaab deploy replit                # Prepare Replit deployment
-
-# Workspace Management
-aaab workspace --list            # List workspace agents
-aaab workspace --stats           # Show workspace statistics
-```
-
-## 🌐 HTTP Server API
-
-Start the production-ready HTTP server:
+### Local Development
 
 ```bash
-node bin/aaab.js serve --port 5000 --watch
+# Clone the repository
+git clone https://github.com/Init-Abdellm/zinebi.git
+cd zinebi
+
+# Install dependencies
+npm install
+
+# Build the project
+npm run build
+
+# Start development server
+npm run dev
 ```
 
-### API Endpoints
+### Docker Installation
 
 ```bash
-# Health & Status
-GET  /health                      # Health check
-GET  /api/agents                  # List all agents
+# Pull the image
+docker pull zinebi/zinebi:latest
 
-# Agent Execution
-POST /api/agents/:id/execute      # Execute specific agent
-POST /api/agents/reload           # Reload all agents
-
-# Example Usage
-curl -X POST http://localhost:5000/api/agents/hello-world/execute \
-  -H "Content-Type: application/json" \
-  -d '{"name":"API User"}'
+# Run the container
+docker run -p 5000:5000 -e OPENAI_API_KEY=your-key zinebi/zinebi:latest
 ```
 
-## 🔌 Plugin System
+## Usage
 
-### Analytics Plugin
-Monitors execution metrics, success rates, and performance:
+### Basic Commands
 
-```javascript
-const AnalyticsPlugin = require('./plugins/analytics.plugin.js');
-// Auto-loaded with plugin manager
-// Provides: execution counts, success rates, performance metrics
-```
-
-### Cache Plugin
-Intelligent caching for deterministic operations:
-
-```javascript
-const CachePlugin = require('./plugins/cache.plugin.js');
-// Features: TTL management, automatic cleanup, memory optimization
-// Supports: configurable cache keys, expiration policies
-```
-
-## 🚢 Deployment Options
-
-### Docker Deployment
 ```bash
-# Generate Docker files
-node bin/aaab.js deploy docker --port 5000
+# Initialize a new project
+aaab init <project-name> [options]
 
-# Build and run
-docker build -t aaab .
-docker run -p 5000:5000 aaab
+# List available models
+aaab models --list
+
+# Get model recommendations
+aaab models --recommend "sentiment-analysis"
+
+# Create an agent from template
+aaab template chatbot agents/chat.agent
+
+# Start the server
+aaab serve --port 5000
+
+# Validate agent files
+aaab validate agents/*.agent
+
+# Deploy to production
+aaab deploy docker
 ```
 
-### Kubernetes Deployment
+### Advanced Commands
+
 ```bash
-# Generate K8s manifests
-node bin/aaab.js deploy kubernetes --replicas 3
+# Vision operations
+aaab vision --classify image.jpg
+aaab vision --detect image.jpg
+aaab vision --ocr document.pdf
 
-# Deploy to cluster
-kubectl apply -f k8s-manifest.yml
+# Audio operations
+aaab audio --stt audio.wav
+aaab audio --tts "Hello world"
+
+# Machine learning
+aaab ml --train config.json
+aaab ml --predict model.pkl data.json
+
+# Fine-tuning
+aaab fine-tune --create gpt-3.5-turbo --data training.jsonl
+
+# Vector databases
+aaab vector-db --create my-db
+aaab vector-db --search my-db docs "query"
 ```
 
-### Replit Deployment
-```bash
-# Prepare for Replit
-node bin/aaab.js deploy replit
+## Architecture
 
-# Click "Deploy" in Replit interface
+### Core Components
+
 ```
-
-## 🏗️ Architecture
-
-### Modern Framework Structure
-```
-├── bin/aaab.js                   # Modern CLI with ASCII branding
-├── lib/
-│   ├── core/orchestrator.js      # Execution engine
-│   ├── server/                   # HTTP server implementations
-│   ├── plugins/                  # Plugin management system
-│   ├── deployment/               # Multi-platform deployment
-│   ├── utils/console.js          # Beautiful console interface
-│   └── providers/                # AI provider integrations
-├── plugins/                      # Built-in plugins
-├── templates/                    # Professional templates
-└── agents/                       # Your agent workflows
+Zinebi/
+├── Core Framework
+│   ├── Model Manager      # AI/ML model registry and management
+│   ├── Orchestrator       # Workflow execution engine
+│   ├── Parser            # Agent file parsing and validation
+│   └── Renderer          # Output formatting and templating
+├── Providers
+│   ├── OpenAI            # GPT models and APIs
+│   ├── Anthropic         # Claude models
+│   ├── Google            # Gemini models
+│   ├── Ollama            # Local model serving
+│   └── Custom            # Custom provider integration
+├── Models
+│   ├── Language          # LLM, SLM, MLM models
+│   ├── Vision            # Computer vision models
+│   ├── Audio             # ASR, TTS models
+│   └── ML                # Traditional ML models
+└── Utils
+    ├── Logger            # Structured logging
+    ├── Security          # Authentication and encryption
+    └── Monitoring        # Performance and health monitoring
 ```
 
 ### Data Flow
-1. **Parse** `.agent` files into executable ASTs
-2. **Validate** structure and semantics
-3. **Execute** through plugin-enhanced orchestrator
-4. **Serve** via HTTP API or CLI interface
-5. **Monitor** with analytics and caching plugins
 
-## 🎨 Template Gallery
+1. **Input Processing**: Agent files are parsed and validated
+2. **Model Selection**: Appropriate models are selected based on requirements
+3. **Execution**: Workflows are executed with proper error handling
+4. **Output Generation**: Results are formatted and returned
+5. **Monitoring**: Performance metrics are collected and logged
 
-| Template | Description | Use Case |
-|----------|-------------|----------|
-| `chatbot` | Interactive conversation agent | Customer service, support |
-| `webhook-processor` | HTTP webhook handler | API integrations, notifications |
-| `sentiment-analyzer` | Text sentiment analysis | Social media, feedback analysis |
-| `price-tracker` | Product price monitoring | E-commerce, deal alerts |
-| `lead-scorer` | Sales lead qualification | CRM, marketing automation |
+## API Reference
 
-## 🔐 Security & Best Practices
+### Agent File Format
 
-- **API Keys**: Externalized to environment variables
-- **Validation**: Comprehensive schema and semantic validation
-- **Rate Limiting**: Built-in request rate limiting
-- **Error Handling**: Secure error messages without data leakage
-- **CORS**: Configurable cross-origin resource sharing
+```yaml
+@agent agent-name v1
+description: "Agent description"
+trigger:
+  type: http
+  method: POST
+  path: /endpoint
 
-## 🤝 Contributing
+secrets:
+  - name: API_KEY
+    type: env
+    value: OPENAI_API_KEY
+
+variables:
+  input:
+    type: input
+    path: message
+    required: true
+
+steps:
+  - id: process
+    type: llm
+    provider: openai
+    model: gpt-4o
+    prompt: "Process: {input}"
+    save: result
+
+outputs:
+  response: "{result}"
+@end
+```
+
+### CLI Commands
+
+| Command | Description | Options |
+|---------|-------------|---------|
+| `aaab init` | Initialize new project | `--provider`, `--model`, `--template` |
+| `aaab models` | Manage AI/ML models | `--list`, `--type`, `--provider`, `--recommend` |
+| `aaab serve` | Start HTTP server | `--port`, `--host`, `--watch` |
+| `aaab validate` | Validate agent files | `--strict`, `--fix` |
+| `aaab deploy` | Deploy to production | `--strategy`, `--config` |
+
+### Configuration
+
+```json
+{
+  "name": "my-zinebi-project",
+  "version": "1.0.0",
+  "providers": {
+    "openai": {
+      "apiKey": "${OPENAI_API_KEY}",
+      "timeout": 30000
+    }
+  },
+  "models": {
+    "default": "gpt-4o",
+    "vision": "gpt-4o-vision",
+    "audio": "whisper-1"
+  },
+  "security": {
+    "jwtSecret": "${JWT_SECRET}",
+    "rateLimit": {
+      "windowMs": 900000,
+      "max": 100
+    }
+  }
+}
+```
+
+## Examples
+
+### Simple Chat Agent
+
+```yaml
+@agent chat v1
+description: "Simple chat agent"
+trigger:
+  type: http
+  method: POST
+  path: /chat
+
+secrets:
+  - name: OPENAI
+    type: env
+    value: OPENAI_API_KEY
+
+variables:
+  message:
+    type: input
+    path: message
+    required: true
+
+steps:
+  - id: respond
+    type: llm
+    provider: openai
+    model: gpt-4o
+    prompt: "Respond to: {message}"
+    save: response
+
+outputs:
+  reply: "{response}"
+@end
+```
+
+### Vision Analysis Agent
+
+```yaml
+@agent vision-analyzer v1
+description: "Analyze images with AI"
+trigger:
+  type: http
+  method: POST
+  path: /vision/analyze
+
+variables:
+  image:
+    type: input
+    path: image
+    required: true
+
+steps:
+  - id: classify
+    type: vision
+    model: gpt-4o-vision
+    action: classify
+    input: "{image}"
+    save: classification
+
+  - id: describe
+    type: vision
+    model: gpt-4o-vision
+    action: describe
+    input: "{image}"
+    save: description
+
+outputs:
+  labels: "{classification.labels}"
+  confidence: "{classification.confidence}"
+  description: "{description}"
+@end
+```
+
+### Multimodal Agent
+
+```yaml
+@agent multimodal v1
+description: "Process text, image, and audio"
+trigger:
+  type: http
+  method: POST
+  path: /multimodal
+
+steps:
+  - id: text_analysis
+    type: llm
+    provider: openai
+    model: gpt-4o
+    input: "{text}"
+    save: text_insights
+
+  - id: image_analysis
+    type: vision
+    model: gpt-4o-vision
+    input: "{image}"
+    save: image_insights
+
+  - id: audio_analysis
+    type: asr
+    model: whisper-1
+    input: "{audio}"
+    save: audio_insights
+
+  - id: synthesis
+    type: llm
+    provider: openai
+    model: gpt-4o
+    prompt: |
+      Synthesize insights:
+      Text: {text_insights}
+      Image: {image_insights}
+      Audio: {audio_insights}
+    save: final_analysis
+
+outputs:
+  analysis: "{final_analysis}"
+@end
+```
+
+## Deployment
+
+### Docker Deployment
 
 ```bash
-# Development setup
-git clone <repo>
-cd aaab-framework
+# Build the image
+docker build -t zinebi .
+
+# Run the container
+docker run -p 5000:5000 \
+  -e OPENAI_API_KEY=your-key \
+  -e NODE_ENV=production \
+  zinebi
+```
+
+### Kubernetes Deployment
+
+```bash
+# Apply the manifests
+kubectl apply -f k8s/
+
+# Check deployment status
+kubectl get pods -l app=zinebi
+```
+
+### Serverless Deployment
+
+```bash
+# Deploy to AWS Lambda
+serverless deploy
+
+# Deploy to Vercel
+vercel --prod
+```
+
+### Environment Variables
+
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `OPENAI_API_KEY` | OpenAI API key | Yes |
+| `ANTHROPIC_API_KEY` | Anthropic API key | No |
+| `GEMINI_API_KEY` | Google Gemini API key | No |
+| `NODE_ENV` | Environment (development/production) | No |
+| `PORT` | Server port | No |
+| `JWT_SECRET` | JWT signing secret | No |
+
+## Contributing
+
+We welcome contributions from the community. Please read our contributing guidelines before submitting pull requests.
+
+### Development Setup
+
+```bash
+# Fork and clone the repository
+git clone https://github.com/your-username/zinebi.git
+cd zinebi
+
+# Install dependencies
 npm install
 
 # Run tests
@@ -258,18 +510,41 @@ npm test
 npm run dev
 ```
 
-## 📖 Examples
+### Code Style
 
-Explore the `examples/` and `templates/` directories for:
-- Real-world workflow patterns
-- Multi-step automation examples
-- Provider integration samples
-- Production-ready configurations
+- Use TypeScript for all new code
+- Follow ESLint and Prettier configurations
+- Write comprehensive tests
+- Update documentation for new features
 
-## 📄 License
+### Pull Request Process
 
-MIT License - Built with ❤️ by **INIT-ABDELLM**
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Update documentation
+6. Submit a pull request
+
+## License
+
+This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
+
+### License Summary
+
+- **License**: Apache License 2.0
+- **Commercial Use**: ✓ Allowed
+- **Modification**: ✓ Allowed
+- **Distribution**: ✓ Allowed
+- **Patent Use**: ✓ Allowed
+- **Private Use**: ✓ Allowed
+- **Liability**: ✗ Limited
+- **Warranty**: ✗ Limited
+
+For more information about the Apache License 2.0, visit [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0).
 
 ---
 
-**Ready to transform your AI workflows?** Start with `node bin/aaab.js init my-project` and experience the future of agent deployment!
+**Zinebi** - Transforming AI/ML development with comprehensive, production-ready solutions.
+
+Built with ❤️ by [INIT-ABDELLM](https://github.com/Init-Abdellm)

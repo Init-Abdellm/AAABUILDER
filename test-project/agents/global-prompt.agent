@@ -1,0 +1,35 @@
+@agent global-prompt v1
+description: "Agent with global system prompt"
+trigger:
+  type: http
+  method: POST
+  path: /global-prompt
+
+secrets:
+  - name: OPENAI
+    type: env
+    value: OPENAI_API_KEY
+
+vars:
+  message:
+    type: string
+    from: input
+    required: true
+
+steps:
+  - id: process
+    type: llm
+    provider: openai
+    model: gpt-4o
+    globalPrompt: |
+      You are an expert AI assistant with deep knowledge in technology, science, and business.
+      Always provide accurate, helpful, and well-structured responses.
+      Use markdown formatting when appropriate.
+    prompt: |
+      Please respond to: {message}
+    outputs:
+      response: content
+
+outputs:
+  result: "{response}"
+@end
