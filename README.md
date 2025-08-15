@@ -12,7 +12,7 @@
 ## Table of Contents
 
 - [Overview](#overview)
-- [Why Zinebi?](#why-zinebi)
+- [Why AAABUILDER?](#why-AAABUILDER)
 - [Comparison with Other Solutions](#comparison-with-other-solutions)
 - [Features](#features)
 - [Quick Start](#quick-start)
@@ -27,17 +27,17 @@
 
 ## Overview
 
-Zinebi addresses the growing complexity of AI/ML development by providing a unified framework that handles everything from simple text generation to complex multimodal AI systems. Unlike other solutions that focus on specific domains, Zinebi offers comprehensive support across all AI/ML paradigms.
+AAABUILDER addresses the growing complexity of AI/ML development by providing a unified framework that handles everything from simple text generation to complex multimodal AI systems. Unlike other solutions that focus on specific domains, AAABUILDER offers comprehensive support across all AI/ML paradigms.
 
 The framework is built with TypeScript-first development, ensuring type safety and developer productivity while maintaining the flexibility needed for rapid AI/ML prototyping and production deployment.
 
 ## Why AAABuilder?
 
 ### Comprehensive Model Support
-Zinebi supports every major AI/ML model type, from traditional language models to cutting-edge multimodal systems. This eliminates the need to learn multiple frameworks for different AI tasks.
+AAABUILDER supports every major AI/ML model type, from traditional language models to cutting-edge multimodal systems. This eliminates the need to learn multiple frameworks for different AI tasks.
 
 ### Production-Ready Architecture
-Built with enterprise-grade features including security, monitoring, and deployment automation. Zinebi transforms prototypes into production systems seamlessly.
+Built with enterprise-grade features including security, monitoring, and deployment automation. AAABUILDER transforms prototypes into production systems seamlessly.
 
 ### Developer Experience
 TypeScript-first development with comprehensive tooling, hot reload, and intuitive CLI commands. Developers can focus on AI logic rather than infrastructure concerns.
@@ -217,7 +217,7 @@ aaab vector-db --search my-db docs "query"
 ### Core Components
 
 ```
-Zinebi/
+AAABUILDER/
 ├── Core Framework
 │   ├── Model Manager      # AI/ML model registry and management
 │   ├── Orchestrator       # Workflow execution engine
