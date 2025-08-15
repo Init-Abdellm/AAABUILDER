@@ -1,0 +1,18 @@
+@agent hello-world v1
+trigger http POST /hello
+secret OPENAI=env:OPENAI_KEY
+var name = input.name
+
+step greet:
+  kind llm
+  model gpt-4o
+  provider openai
+  prompt """
+    Hello {name}, please provide a friendly greeting and one helpful tip for today.
+  """
+  retries 3
+  timeout_ms 30000
+  save greeting
+
+output greeting
+@end

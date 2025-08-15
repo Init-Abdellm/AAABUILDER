@@ -1,0 +1,25 @@
+{
+  "name": "workspace",
+  "version": "1.0.0",
+  "description": "A Node.js CLI framework that converts declarative `.agent` files into executable AI agent workflows with multi-provider support.",
+  "main": "index.js",
+  "bin": {
+    "workspace": "bin/aaab.js"
+  },
+  "directories": {
+    "example": "examples",
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
+    "chalk": "^4.1.2",
+    "commander": "^14.0.0"
+  }
+}
