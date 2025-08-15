@@ -1,5 +1,5 @@
 {
-  "name": "zinebi",
+  "name": "aaabuilder",
   "version": "2.0.0",
   "description": "Advanced AI Agent Builder - A comprehensive framework for building AI agents with TypeScript support",
   "main": "bin/aaab.js",
@@ -87,7 +87,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Init-Abdellm/AAABuilder"
+    "url": "git+https://github.com/Init-Abdellm/AAABuilder.git"
   },
   "bugs": {
     "url": "https://github.com/Init-Abdellm/AAABuilder/issues"

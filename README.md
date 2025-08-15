@@ -1,13 +1,13 @@
-# Zinebi - Advanced AI/ML Agent Framework
+# AAABuilder - Advanced AI/ML Agent Framework
 
 [![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)](package.json)
 [![Node](https://img.shields.io/badge/node-%3E%3D18-green.svg)](package.json)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3+-blue.svg)](package.json)
 [![License](https://img.shields.io/badge/license-Apache%202.0-brightgreen.svg)](LICENSE)
-[![Downloads](https://img.shields.io/npm/dm/zinebi.svg)](https://www.npmjs.com/package/zinebi)
-[![Stars](https://img.shields.io/github/stars/Init-Abdellm/zinebi.svg)](https://github.com/Init-Abdellm/zinebi)
+[![Downloads](https://img.shields.io/npm/dm/aaabuilder.svg)](https://www.npmjs.com/package/aaabuilder)
+[![Stars](https://github.com/Init-Abdellm/AAABuilder/stargazers)](https://github.com/Init-Abdellm/AAABuilder)
 
-**Zinebi** is the most comprehensive AI/ML development framework available, transforming complex AI workflows into production-ready APIs with support for all major AI/ML model types including LLM, SLM, MLM, Vision, ASR, TTS, RL, GNN, RNN, CNN, GAN, Diffusion, Transformer, MLP, Autoencoder, BERT, RAG, Hybrid, and Foundation Models.
+**AAABuilder** (formerly ZINEBI) is the most comprehensive AI/ML development framework available, transforming complex AI workflows into production-ready APIs with support for all major AI/ML model types including LLM, SLM, MLM, Vision, ASR, TTS, RL, GNN, RNN, CNN, GAN, Diffusion, Transformer, MLP, Autoencoder, BERT, RAG, Hybrid, and Foundation Models.
 
 ## Table of Contents
 
@@ -31,7 +31,7 @@ Zinebi addresses the growing complexity of AI/ML development by providing a unif
 
 The framework is built with TypeScript-first development, ensuring type safety and developer productivity while maintaining the flexibility needed for rapid AI/ML prototyping and production deployment.
 
-## Why Zinebi?
+## Why AAABuilder?
 
 ### Comprehensive Model Support
 Zinebi supports every major AI/ML model type, from traditional language models to cutting-edge multimodal systems. This eliminates the need to learn multiple frameworks for different AI tasks.
@@ -44,7 +44,7 @@ TypeScript-first development with comprehensive tooling, hot reload, and intuiti
 
 ## Comparison with Other Solutions
 
-| Feature | Zinebi | LangChain | AutoGen | CrewAI | Flowise |
+| Feature | AAABuilder | LangChain | AutoGen | CrewAI | Flowise |
 |---------|--------|-----------|---------|--------|---------|
 | **Model Support** | All AI/ML types | LLM-focused | LLM-focused | LLM-focused | LLM-focused |
 | **Vision Models** | ✓ Full support | ✗ Limited | ✗ Limited | ✗ Limited | ✗ Limited |
@@ -106,7 +106,7 @@ TypeScript-first development with comprehensive tooling, hot reload, and intuiti
 
 ```bash
 # Install globally
-npm install -g zinebi
+npm install -g aaabuilder
 
 # Verify installation
 aaab --version
@@ -133,15 +133,14 @@ npm start
 ### Global Installation
 
 ```bash
-npm install -g zinebi
-```
+npm install -g aaabuilder
 
 ### Local Development
 
 ```bash
 # Clone the repository
-git clone https://github.com/Init-Abdellm/zinebi.git
-cd zinebi
+git clone https://github.com/Init-Abdellm/AAABuilder.git
+cd AAABuilder
 
 # Install dependencies
 npm install
@@ -157,11 +156,10 @@ npm run dev
 
 ```bash
 # Pull the image
-docker pull zinebi/zinebi:latest
+docker pull aaabuilder/aaabuilder:latest
 
 # Run the container
-docker run -p 5000:5000 -e OPENAI_API_KEY=your-key zinebi/zinebi:latest
-```
+docker run -p 5000:5000 -e OPENAI_API_KEY=your-key aaabuilder/aaabuilder:latest
 
 ## Usage
 
@@ -300,7 +298,7 @@ outputs:
 
 ```json
 {
-  "name": "my-zinebi-project",
+  "name": "my-aaabuilder-project",
   "version": "1.0.0",
   "providers": {
     "openai": {
@@ -449,14 +447,13 @@ outputs:
 
 ```bash
 # Build the image
-docker build -t zinebi .
+docker build -t aaabuilder .
 
 # Run the container
 docker run -p 5000:5000 \
   -e OPENAI_API_KEY=your-key \
   -e NODE_ENV=production \
-  zinebi
-```
+  aaabuilder
 
 ### Kubernetes Deployment
 
@@ -465,7 +462,7 @@ docker run -p 5000:5000 \
 kubectl apply -f k8s/
 
 # Check deployment status
-kubectl get pods -l app=zinebi
+kubectl get pods -l app=aaabuilder
 ```
 
 ### Serverless Deployment
@@ -497,8 +494,8 @@ We welcome contributions from the community. Please read our contributing guidel
 
 ```bash
 # Fork and clone the repository
-git clone https://github.com/your-username/zinebi.git
-cd zinebi
+git clone https://github.com/your-username/AAABuilder.git
+cd AAABuilder
 
 # Install dependencies
 npm install
@@ -545,6 +542,6 @@ For more information about the Apache License 2.0, visit [https://www.apache.org
 
 ---
 
-**Zinebi** - Transforming AI/ML development with comprehensive, production-ready solutions.
+**AAABuilder** - Transforming AI/ML development with comprehensive, production-ready solutions.
 
 Built with ❤️ by [INIT-ABDELLM](https://github.com/Init-Abdellm)
