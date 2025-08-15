@@ -1,23 +1,10 @@
 {
   "files.associations": {
-    "*.agent": "plaintext",
-    "**/agents/**": "plaintext"
+    "*.agent": "yaml",
+    "**/agents/**": "yaml"
   },
-  "file.associations": {
-    "*.agent": "plaintext"
-  },
-  "workbench.iconTheme": "aaabuilder-icons",
-  "material-icon-theme.folders.associations": {
-    "agents": "src",
-    "agent": "src"
-  },
+  "workbench.iconTheme": "material-icon-theme",
   "material-icon-theme.files.associations": {
     "*.agent": "code"
-  },
-  "explorer.fileAssociations": {
-    "*.agent": "plaintext"
-  },
-  "custom-file-associations": {
-    "*.agent": "plaintext"
   }
 }
