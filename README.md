@@ -7,7 +7,7 @@
 [![Downloads](https://img.shields.io/npm/dm/aaabuilder.svg)](https://www.npmjs.com/package/aaabuilder)
 [![Stars](https://github.com/Init-Abdellm/AAABuilder/stargazers)](https://github.com/Init-Abdellm/AAABuilder)
 
-**AAABuilder** (formerly ZINEBI) is the most comprehensive AI/ML development framework available, transforming complex AI workflows into production-ready APIs with support for all major AI/ML model types including LLM, SLM, MLM, Vision, ASR, TTS, RL, GNN, RNN, CNN, GAN, Diffusion, Transformer, MLP, Autoencoder, BERT, RAG, Hybrid, and Foundation Models.
+**AAABuilder** (AGENT AS A BACKEND) is a comprehensive AI/ML development framework available, transforming complex AI workflows into production-ready APIs with support for all major AI/ML model types including LLM, SLM, MLM, Vision, ASR, TTS, RL, GNN, RNN, CNN, GAN, Diffusion, Transformer, MLP, Autoencoder, BERT, RAG, Hybrid, and Foundation Models.
 
 ## Table of Contents
 
