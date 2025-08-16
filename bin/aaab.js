@@ -28,6 +28,11 @@ program
   .description('Execute an .agent file')
   .argument('<file>', '.agent file to execute')
   .option('--input <json>', 'Input data as JSON string', '{}')
+  .option('--stream', 'Stream provider output when supported')
+  .option('--temperature <num>', 'Sampling temperature', parseFloat)
+  .option('--top-p <num>', 'Top-p nucleus sampling', parseFloat)
+  .option('--top-k <num>', 'Top-k sampling (for some local models)', parseInt)
+  .option('--max-tokens <num>', 'Max tokens to generate', parseInt)
   .option('--debug', 'Enable debug output')
   .action(async (file, options) => {
     try {
@@ -54,7 +59,23 @@ program
       }
 
       const input = JSON.parse(options.input);
-      const result = await orchestrator.execute(ast, input);
+
+      // Execution options forwarded to providers via context
+      const execOptions = {
+        stream: Boolean(options.stream),
+        temperature: options.temperature,
+        topP: options.topP,
+        topK: options.topK,
+        maxTokens: options.maxTokens,
+      };
+
+      if (execOptions.stream) {
+        execOptions.onStreamChunk = (chunk) => {
+          process.stdout.write(chunk);
+        };
+      }
+
+      const result = await orchestrator.execute(ast, input, execOptions);
       
       logger.info(chalk.green('Execution completed successfully'));
       if (result) {
@@ -799,18 +820,28 @@ program
   .option('--port <port>', 'Port to listen on', '5000')
   .option('--agents-dir <dir>', 'Directory containing .agent files', './agents')
   .option('--watch', 'Watch for file changes and reload agents')
+  .option('--express', 'Use full Express server with auth and dynamic endpoints')
+  .option('--no-auth', 'Disable authentication (Express server only)')
+  .option('--api-key <key...>', 'API key(s) for server authentication (Express server)')
+  .option('--jwt-secret <secret>', 'JWT secret for token auth (Express server)')
   .action(async (options) => {
-    const AABBServer = require('../lib/server/minimal-server');
-    
-    const server = new AABBServer({
+    const useExpress = Boolean(options.express);
+    const ServerClass = useExpress
+      ? require('../lib/server/express-server')
+      : require('../lib/server/minimal-server');
+
+    const server = new ServerClass({
       port: parseInt(options.port),
-      agentsDir: options.agentsDir
+      agentsDir: options.agentsDir,
+      enableAuth: useExpress ? options.auth !== false : undefined,
+      apiKeys: useExpress ? (options.apiKey || []) : undefined,
+      jwtSecret: useExpress ? (options.jwtSecret || process.env.AAAB_JWT_SECRET) : undefined,
     });
     
     try {
       await server.start();
       
-      if (options.watch) {
+      if (options.watch && server.loadAgents) {
         const chokidar = require('chokidar');
         const watcher = chokidar.watch(options.agentsDir + '/*.agent');
         

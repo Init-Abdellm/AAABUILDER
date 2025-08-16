@@ -1,0 +1,466 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://aaabuilder.com/schemas/agent.json",
+  "title": "AAABuilder Agent Schema",
+  "description": "Schema for AAABuilder agent configuration files",
+  "type": "object",
+  "required": ["id", "version", "trigger"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*$",
+      "description": "Unique identifier for the agent"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Agent version number"
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable description of the agent"
+    },
+    "trigger": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["http", "cron", "event", "webhook", "schedule"],
+          "description": "Type of trigger that activates the agent"
+        },
+        "method": {
+          "type": "string",
+          "enum": ["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"],
+          "description": "HTTP method for http triggers"
+        },
+        "path": {
+          "type": "string",
+          "pattern": "^/",
+          "description": "URL path for http triggers"
+        },
+        "schedule": {
+          "type": "string",
+          "description": "Cron expression for scheduled triggers"
+        }
+      },
+      "additionalProperties": false
+    },
+    "secrets": {
+      "type": "object",
+      "patternProperties": {
+        "^[A-Z_][A-Z0-9_]*$": {
+          "type": "object",
+          "required": ["type", "value"],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["env", "file", "vault"],
+              "description": "Type of secret storage"
+            },
+            "value": {
+              "type": "string",
+              "description": "Secret value or reference"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false,
+      "description": "Secret configurations for the agent"
+    },
+    "vars": {
+      "type": "object",
+      "patternProperties": {
+        "^[a-zA-Z][a-zA-Z0-9_]*$": {
+          "type": "object",
+          "required": ["type", "from"],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["string", "number", "boolean", "object", "array"],
+              "description": "Data type of the variable"
+            },
+            "from": {
+              "type": "string",
+              "enum": ["input", "env", "literal"],
+              "description": "Source of the variable value"
+            },
+            "path": {
+              "type": "string",
+              "description": "Path to extract value from source"
+            },
+            "required": {
+              "type": "boolean",
+              "default": false,
+              "description": "Whether the variable is required"
+            },
+            "default": {
+              "description": "Default value if not provided"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false,
+      "description": "Variable definitions for the agent"
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "$ref": "#/$defs/step"
+      },
+      "description": "Execution steps for the agent"
+    },
+    "outputs": {
+      "type": "object",
+      "patternProperties": {
+        "^[a-zA-Z][a-zA-Z0-9_]*$": {
+          "type": "string",
+          "description": "Output value template"
+        }
+      },
+      "additionalProperties": false,
+      "description": "Output definitions for the agent"
+    },
+    "output": {
+      "type": "string",
+      "description": "Legacy single output (deprecated, use outputs instead)"
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "step": {
+      "type": "object",
+      "required": ["id"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-zA-Z][a-zA-Z0-9_]*$",
+          "description": "Unique identifier for the step"
+        },
+        "kind": {
+          "type": "string",
+          "enum": ["llm", "http", "function", "vision", "audio", "vectordb", "finetune", "embedding", "search"],
+          "description": "Type of operation this step performs"
+        },
+        "when": {
+          "type": "string",
+          "description": "Conditional expression for step execution"
+        },
+        "retries": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10,
+          "default": 0,
+          "description": "Number of retry attempts on failure"
+        },
+        "timeout_ms": {
+          "type": "integer",
+          "minimum": 1000,
+          "maximum": 300000,
+          "default": 60000,
+          "description": "Timeout in milliseconds"
+        },
+        "save": {
+          "type": "string",
+          "pattern": "^[a-zA-Z][a-zA-Z0-9_]*$",
+          "description": "Variable name to save step result"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": { "const": "llm" }
+            }
+          },
+          "then": {
+            "required": ["kind", "model", "prompt"],
+            "properties": {
+              "model": {
+                "type": "string",
+                "description": "Model identifier (supports complex names with colons, slashes, dots, hyphens)"
+              },
+              "provider": {
+                "type": "string",
+                "enum": ["openai", "anthropic", "google", "huggingface", "ollama", "llama", "gemini", "custom"],
+                "description": "AI provider for the model"
+              },
+              "prompt": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Prompt template for the LLM"
+              },
+              "temperature": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 2,
+                "description": "Sampling temperature"
+              },
+              "max_tokens": {
+                "type": "integer",
+                "minimum": 1,
+                "description": "Maximum tokens to generate"
+              },
+              "top_p": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1,
+                "description": "Nucleus sampling parameter"
+              },
+              "top_k": {
+                "type": "integer",
+                "minimum": 1,
+                "description": "Top-k sampling parameter"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": { "const": "http" }
+            }
+          },
+          "then": {
+            "required": ["kind", "url"],
+            "properties": {
+              "url": {
+                "type": "string",
+                "format": "uri",
+                "description": "HTTP endpoint URL"
+              },
+              "method": {
+                "type": "string",
+                "enum": ["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"],
+                "default": "GET",
+                "description": "HTTP method"
+              },
+              "headers": {
+                "type": "object",
+                "patternProperties": {
+                  "^[a-zA-Z-]+$": {
+                    "type": "string"
+                  }
+                },
+                "description": "HTTP headers"
+              },
+              "body": {
+                "description": "Request body"
+              },
+              "query": {
+                "type": "object",
+                "description": "Query parameters"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": { "const": "function" }
+            }
+          },
+          "then": {
+            "required": ["kind", "function"],
+            "properties": {
+              "function": {
+                "type": "string",
+                "description": "Function name to execute"
+              },
+              "args": {
+                "type": "object",
+                "description": "Function arguments"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": { "const": "vision" }
+            }
+          },
+          "then": {
+            "required": ["kind", "model", "input"],
+            "properties": {
+              "model": {
+                "type": "string",
+                "description": "Vision model identifier"
+              },
+              "provider": {
+                "type": "string",
+                "enum": ["openai", "google", "huggingface", "custom"],
+                "description": "Vision model provider"
+              },
+              "input": {
+                "type": "string",
+                "description": "Image input reference"
+              },
+              "operation": {
+                "type": "string",
+                "enum": ["classify", "describe", "caption", "detect", "segment", "ocr"],
+                "description": "Vision operation to perform"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": { "const": "audio" }
+            }
+          },
+          "then": {
+            "required": ["kind", "operation"],
+            "properties": {
+              "operation": {
+                "type": "string",
+                "enum": ["transcribe", "translate", "synthesize", "analyze", "enhance"],
+                "description": "Audio operation to perform"
+              },
+              "model": {
+                "type": "string",
+                "description": "Audio model identifier"
+              },
+              "provider": {
+                "type": "string",
+                "enum": ["openai", "google", "huggingface", "custom"],
+                "description": "Audio model provider"
+              },
+              "input": {
+                "type": "string",
+                "description": "Audio input reference"
+              },
+              "language": {
+                "type": "string",
+                "description": "Language code for processing"
+              },
+              "voice": {
+                "type": "string",
+                "description": "Voice identifier for synthesis"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": { "const": "vectordb" }
+            }
+          },
+          "then": {
+            "required": ["kind", "operation", "backend"],
+            "properties": {
+              "operation": {
+                "type": "string",
+                "enum": ["create", "insert", "search", "update", "delete", "list"],
+                "description": "Vector database operation"
+              },
+              "backend": {
+                "type": "string",
+                "enum": ["pinecone", "weaviate", "qdrant", "chroma", "milvus", "custom"],
+                "description": "Vector database backend"
+              },
+              "collection": {
+                "type": "string",
+                "description": "Collection or index name"
+              },
+              "query": {
+                "type": "string",
+                "description": "Search query"
+              },
+              "topK": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000,
+                "default": 10,
+                "description": "Number of results to return"
+              },
+              "filter": {
+                "type": "object",
+                "description": "Metadata filter conditions"
+              },
+              "documents": {
+                "type": "array",
+                "items": {
+                  "type": "object"
+                },
+                "description": "Documents to insert or update"
+              },
+              "embeddings": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  }
+                },
+                "description": "Vector embeddings"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": { "const": "finetune" }
+            }
+          },
+          "then": {
+            "required": ["kind", "operation", "provider"],
+            "properties": {
+              "operation": {
+                "type": "string",
+                "enum": ["create", "status", "cancel", "list", "delete"],
+                "description": "Fine-tuning operation"
+              },
+              "provider": {
+                "type": "string",
+                "enum": ["openai", "huggingface", "custom"],
+                "description": "Fine-tuning provider"
+              },
+              "model": {
+                "type": "string",
+                "description": "Base model to fine-tune"
+              },
+              "training_file": {
+                "type": "string",
+                "description": "Training data file path"
+              },
+              "validation_file": {
+                "type": "string",
+                "description": "Validation data file path"
+              },
+              "hyperparameters": {
+                "type": "object",
+                "properties": {
+                  "n_epochs": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "batch_size": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "learning_rate_multiplier": {
+                    "type": "number",
+                    "minimum": 0
+                  }
+                },
+                "description": "Fine-tuning hyperparameters"
+              },
+              "job_id": {
+                "type": "string",
+                "description": "Fine-tuning job identifier"
+              }
+            }
+          }
+        }
+      ],
+      "additionalProperties": true
+    }
+  }
+}

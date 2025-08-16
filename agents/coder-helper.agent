@@ -1,0 +1,33 @@
+@agent 
+coder-helper v1
+trigger http POST /code-help
+secret OLLAMA_URL=env:OLLAMA_URL
+var task = input.task
+var language = input.language
+
+step assist:
+  kind llm
+  model qwen2.5-coder:1.5b
+  provider ollama
+  prompt """
+    You are a concise senior code assistant.
+    Task: {task}
+    Preferred language: {language}
+
+    Requirements:
+    - Provide a clear, minimal solution first.
+    - Include a single, self-contained code block.
+    - Add brief bullets for gotchas and time/space complexity if relevant.
+    - If more context is needed, ask 1-2 precise questions at the end.
+  """
+  temperature 0.2
+  retries 2
+  timeout_ms 45000
+  save answer
+
+output {
+  task: task,
+  language: language,
+  answer: answer
+}
+@end

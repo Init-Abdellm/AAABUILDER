@@ -90,6 +90,8 @@ temp/
 *.swp
 *.swo
 *~
+.local
+.kiro
 
 # OS generated files
 .DS_Store

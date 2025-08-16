@@ -1,0 +1,15 @@
+@agent simple-test v1
+trigger http POST /test
+var message = input.message
+
+step respond:
+  kind llm
+  model qwen2.5-coder
+  provider ollama
+  prompt """
+    You are a helpful assistant. Respond to: {message}
+  """
+  save response
+
+output response
+@end

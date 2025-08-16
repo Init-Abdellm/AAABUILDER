@@ -7,3 +7,4 @@ README.md
 .aaab-secrets
 *.log
 .DS_Store
+.kiro
