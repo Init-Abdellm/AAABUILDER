@@ -1,0 +1,92 @@
+@agent vector-rag v1
+description: "Vector database RAG (Retrieval-Augmented Generation) agent"
+trigger:
+  type: http
+  method: POST
+  path: /rag/query
+
+secrets:
+  - name: OPENAI
+    type: env
+    value: OPENAI_API_KEY
+  - name: PINECONE
+    type: env
+    value: PINECONE_API_KEY
+
+vars:
+  query:
+    type: string
+    from: input
+    required: true
+  collection:
+    type: string
+    from: input
+    default: "knowledge_base"
+  top_k:
+    type: number
+    from: input
+    default: 5
+  backend:
+    type: string
+    from: input
+    default: "pinecone"
+
+steps:
+  - id: create_embeddings
+    kind: llm
+    provider: openai
+    model: text-embedding-ada-002
+    prompt: "{query}"
+    operation: embed
+    save: query_embedding
+
+  - id: search_vector_db
+    kind: vectordb
+    backend: "{backend}"
+    operation: search
+    collection: "{collection}"
+    query: "{query_embedding}"
+    topK: "{top_k}"
+    save: search_results
+
+  - id: format_context
+    kind: function
+    function: string
+    args:
+      operation: join
+      input: "{search_results.content}"
+      delimiter: "\n\n"
+    save: formatted_context
+
+  - id: generate_response
+    kind: llm
+    provider: openai
+    model: gpt-4o
+    prompt: |
+      Based on the following context, answer the user's question:
+      
+      Context:
+      {search_results}
+      
+      Question: {query}
+      
+      Please provide a comprehensive answer using the context provided. If the context doesn't contain enough information to answer the question, say so and provide what you can based on your general knowledge.
+      
+      Answer:
+    save: final_response
+
+  - id: log_interaction
+    kind: function
+    function: json
+    args:
+      operation: stringify
+      input:
+        query: "{query}"
+        response: "{final_response}"
+        sources: "{search_results}"
+        timestamp: "{{date.now()}}"
+      space: 2
+    save: interaction_log
+
+output "{final_response} | {search_results} | {formatted_context}"
+@end

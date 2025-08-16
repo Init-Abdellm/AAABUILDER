@@ -1,0 +1,98 @@
+@agent audio-processor v1
+description: "Advanced audio processing agent with STT and TTS capabilities"
+trigger:
+  type: http
+  method: POST
+  path: /audio/process
+
+secrets:
+  - name: OPENAI
+    type: env
+    value: OPENAI_API_KEY
+
+vars:
+  operation:
+    type: string
+    from: input
+    required: true
+    enum: ["stt", "tts", "both"]
+  audio_file:
+    type: string
+    from: input
+    required: false
+  text_input:
+    type: string
+    from: input
+    required: false
+  voice:
+    type: string
+    from: input
+    default: "alloy"
+  model:
+    type: string
+    from: input
+    default: "whisper-1"
+
+steps:
+  - id: transcribe
+    type: audio
+    operation: stt
+    input: "{audio_file}"
+    model: "{model}"
+    when: "{operation} == 'stt' || {operation} == 'both'"
+    save: transcription
+
+  - id: analyze_text
+    type: llm
+    provider: openai
+    model: gpt-4o
+    prompt: |
+      Analyze the following transcribed text and provide insights:
+      
+      Text: {transcription}
+      
+      Please provide:
+      1. Key topics discussed
+      2. Sentiment analysis
+      3. Action items or important points
+      4. Language detection
+      5. Summary
+    when: "{operation} == 'both' && {transcription}"
+    save: analysis
+
+  - id: synthesize_speech
+    type: audio
+    operation: tts
+    input: "{text_input}"
+    voice: "{voice}"
+    model: "tts-1"
+    outputPath: "tts_output_{date.now()}.mp3"
+    when: "{operation} == 'tts' || {operation} == 'both'"
+    save: speech_file
+
+  - id: generate_response
+    type: llm
+    provider: openai
+    model: gpt-4o
+    prompt: |
+      Based on the audio analysis, generate a helpful response:
+      
+      Original Text: {transcription}
+      Analysis: {analysis}
+      
+      Generate a natural, conversational response that addresses the key points.
+    when: "{operation} == 'both' && {analysis}"
+    save: response_text
+
+  - id: response_tts
+    type: audio
+    operation: tts
+    input: "{response_text}"
+    voice: "{voice}"
+    model: "tts-1"
+    outputPath: "response_{date.now()}.mp3"
+    when: "{operation} == 'both' && {response_text}"
+    save: response_audio
+
+output "{transcription} | {analysis} | {speech_file} | {response_text} | {response_audio} | {voice} | {model} | {operation}"
+@end

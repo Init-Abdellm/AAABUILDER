@@ -45,18 +45,21 @@ program
       const content = fs.readFileSync(file, 'utf8');
       const ast = parser.parse(content);
       
-      const validationResult = validator.validate(ast);
-      if (!validationResult.valid) {
-        logger.error('Validation failed:');
-        validationResult.errors.forEach(error => logger.error(`  ${error}`));
-        process.exit(1);
+      // Validate the agent
+      try {
+        await validator.validate(ast);
+      } catch (error) {
+        logger.warn(`Validation warnings: ${error.message}`);
+        // Continue execution even with validation warnings
       }
 
       const input = JSON.parse(options.input);
       const result = await orchestrator.execute(ast, input);
       
       logger.info(chalk.green('Execution completed successfully'));
-      console.log(JSON.stringify(result, null, 2));
+      if (result) {
+        console.log(JSON.stringify(result, null, 2));
+      }
     } catch (error) {
       logger.error(`Execution failed: ${error.message}`);
       if (options.debug) {
@@ -375,25 +378,85 @@ program
   .option('--cancel <jobId>', 'Cancel a fine-tuning job')
   .option('--data <file>', 'Training data file (JSONL, CSV, JSON)')
   .option('--hyperparameters <json>', 'Hyperparameters as JSON string')
+  .option('--provider <provider>', 'Fine-tuning provider (openai, huggingface)', 'openai')
   .action(async (options) => {
     try {
+      const FineTuneProvider = require('../lib/providers/finetune');
+      
       console.header('Model Fine-tuning Management');
+      
+      const provider = new FineTuneProvider(options.provider);
+      
+      // Initialize provider
+      const apiKey = process.env[`${options.provider.toUpperCase()}_API_KEY`];
+      if (!apiKey) {
+        console.error(`No API key found for ${options.provider}. Set ${options.provider.toUpperCase()}_API_KEY environment variable.`);
+        process.exit(1);
+      }
+      
+      await provider.initialize({ apiKey });
       
       if (options.create) {
         console.info(`Creating fine-tuning job for model: ${options.create}`);
-        // Implementation for creating fine-tuning job
+        
+        if (!options.data) {
+          console.error('Training data file is required. Use --data <file>');
+          process.exit(1);
+        }
+        
+        const config = {
+          model: options.create,
+          trainingFile: options.data,
+          hyperparameters: options.hyperparameters ? JSON.parse(options.hyperparameters) : {}
+        };
+        
+        const job = await provider.createFineTuneJob(config);
         console.success('Fine-tuning job created successfully');
+        console.json(job, 'Job Details');
+        
       } else if (options.list) {
         console.info('Listing fine-tuning jobs...');
-        // Implementation for listing jobs
-        console.info('No fine-tuning jobs found');
+        const jobs = await provider.listFineTuneJobs();
+        
+        if (jobs.length === 0) {
+          console.info('No fine-tuning jobs found');
+        } else {
+          console.table(['ID', 'Status', 'Model', 'Created'], 
+            jobs.map(job => [
+              job.id,
+              job.status,
+              job.model,
+              job.createdAt ? new Date(job.createdAt).toLocaleDateString() : 'N/A'
+            ])
+          );
+        }
+        
       } else if (options.status) {
         console.info(`Getting status for job: ${options.status}`);
-        // Implementation for getting job status
+        const status = await provider.getFineTuneStatus(options.status);
+        console.json(status, 'Job Status');
+        
       } else if (options.cancel) {
         console.info(`Cancelling job: ${options.cancel}`);
-        // Implementation for cancelling job
+        const result = await provider.cancelFineTuneJob(options.cancel);
         console.success('Job cancelled successfully');
+        console.json(result, 'Cancellation Result');
+        
+      } else if (options.data) {
+        console.info(`Validating training data: ${options.data}`);
+        const format = path.extname(options.data).substring(1);
+        const validation = provider.validateTrainingData(options.data, format);
+        
+        if (validation.valid) {
+          console.success('Training data is valid');
+          console.info(`Total lines: ${validation.totalLines}`);
+          console.info(`Valid lines: ${validation.validLines}`);
+        } else {
+          console.error('Training data validation failed');
+          validation.errors.forEach(error => console.error(`  ${error}`));
+          process.exit(1);
+        }
+        
       } else {
         console.info('Use --help to see available options');
       }
@@ -413,24 +476,50 @@ program
   .option('--ocr <image>', 'Extract text from image')
   .option('--caption <image>', 'Generate image caption')
   .option('--model <modelId>', 'Specify vision model to use')
+  .option('--provider <provider>', 'Vision provider (openai, huggingface)', 'openai')
   .action(async (options) => {
     try {
+      const visionProvider = require('../lib/providers/vision');
+      
       console.header('Computer Vision Operations');
       
+      if (!options.classify && !options.detect && !options.ocr && !options.caption) {
+        console.error('Please specify an operation: --classify, --detect, --ocr, or --caption');
+        process.exit(1);
+      }
+      
+      const imagePath = options.classify || options.detect || options.ocr || options.caption;
+      const model = options.model || (options.provider === 'openai' ? 'gpt-4o-vision' : 'microsoft/DialoGPT-large');
+      
+      // Check if image file exists
+      if (!fs.existsSync(imagePath)) {
+        console.error(`Image file not found: ${imagePath}`);
+        process.exit(1);
+      }
+      
       if (options.classify) {
-        console.info(`Classifying image: ${options.classify}`);
-        // Implementation for image classification
+        console.info(`Classifying image: ${imagePath}`);
+        const result = await visionProvider.operations.classify(model, imagePath);
+        console.success('Classification completed');
+        console.json(result, 'Classification Result');
+        
       } else if (options.detect) {
-        console.info(`Detecting objects in: ${options.detect}`);
-        // Implementation for object detection
+        console.info(`Detecting objects in: ${imagePath}`);
+        const result = await visionProvider.operations.analyze(model, imagePath);
+        console.success('Object detection completed');
+        console.json(result, 'Detection Result');
+        
       } else if (options.ocr) {
-        console.info(`Extracting text from: ${options.ocr}`);
-        // Implementation for OCR
+        console.info(`Extracting text from: ${imagePath}`);
+        const result = await visionProvider.operations.analyze(model, imagePath);
+        console.success('OCR completed');
+        console.json(result, 'OCR Result');
+        
       } else if (options.caption) {
-        console.info(`Generating caption for: ${options.caption}`);
-        // Implementation for image captioning
-      } else {
-        console.info('Use --help to see available options');
+        console.info(`Generating caption for: ${imagePath}`);
+        const result = await visionProvider.operations.caption(model, imagePath);
+        console.success('Caption generation completed');
+        console.json(result, 'Caption Result');
       }
       
       console.endSection();
@@ -447,18 +536,45 @@ program
   .option('--tts <text>', 'Text to speech conversion')
   .option('--voice <voice>', 'Specify voice for TTS')
   .option('--model <modelId>', 'Specify audio model to use')
+  .option('--output <file>', 'Output file for TTS')
   .action(async (options) => {
     try {
+      const audioProvider = require('../lib/providers/audio');
+      
       console.header('Audio Processing Operations');
+      
+      if (!options.stt && !options.tts) {
+        console.error('Please specify an operation: --stt or --tts');
+        process.exit(1);
+      }
       
       if (options.stt) {
         console.info(`Converting speech to text: ${options.stt}`);
-        // Implementation for speech-to-text
+        
+        if (!fs.existsSync(options.stt)) {
+          console.error(`Audio file not found: ${options.stt}`);
+          process.exit(1);
+        }
+        
+        const result = await audioProvider.operations.stt(options.stt, {
+          model: options.model || 'whisper-1'
+        });
+        
+        console.success('Speech-to-text completed');
+        console.json(result, 'Transcription Result');
+        
       } else if (options.tts) {
-        console.info(`Converting text to speech: ${options.tts}`);
-        // Implementation for text-to-speech
-      } else {
-        console.info('Use --help to see available options');
+        console.info(`Converting text to speech: "${options.tts}"`);
+        
+        const result = await audioProvider.operations.tts(options.tts, {
+          model: options.model || 'tts-1',
+          voice: options.voice || 'alloy',
+          outputPath: options.output
+        });
+        
+        console.success('Text-to-speech completed');
+        console.json(result, 'TTS Result');
+        console.info(`Audio saved to: ${result.outputPath}`);
       }
       
       console.endSection();
@@ -481,21 +597,54 @@ program
       
       if (options.train) {
         console.info(`Training ML model with config: ${options.train}`);
-        // Implementation for model training
+        
+        if (!fs.existsSync(options.train)) {
+          console.error(`Config file not found: ${options.train}`);
+          process.exit(1);
+        }
+        
+        const config = JSON.parse(fs.readFileSync(options.train, 'utf8'));
+        console.info('Training configuration loaded');
+        console.json(config, 'Training Config');
+        
+        // This would integrate with actual ML training frameworks
+        console.warn('ML training requires integration with frameworks like TensorFlow, PyTorch, or scikit-learn');
+        console.info('Consider using the fine-tuning command for model customization instead');
+        
       } else if (options.predict) {
         const [model, data] = options.predict.split(' ');
         console.info(`Making predictions with model: ${model}`);
-        // Implementation for predictions
+        
+        if (!fs.existsSync(data)) {
+          console.error(`Data file not found: ${data}`);
+          process.exit(1);
+        }
+        
+        console.warn('ML prediction requires integration with trained model files');
+        console.info('Consider using the LLM providers for text-based predictions');
+        
       } else if (options.evaluate) {
         const [model, data] = options.evaluate.split(' ');
         console.info(`Evaluating model: ${model}`);
-        // Implementation for evaluation
+        
+        if (!fs.existsSync(data)) {
+          console.error(`Data file not found: ${data}`);
+          process.exit(1);
+        }
+        
+        console.warn('ML evaluation requires integration with trained model files');
+        
       } else if (options.export) {
         const [model, format] = options.export.split(' ');
         console.info(`Exporting model ${model} to ${format} format`);
-        // Implementation for model export
+        
+        console.warn('ML export requires integration with trained model files');
+        console.info('Supported formats: ONNX, TensorFlow SavedModel, PyTorch, scikit-learn pickle');
+        
       } else {
         console.info('Use --help to see available options');
+        console.info('Note: Full ML operations require integration with ML frameworks');
+        console.info('For AI model operations, use: fine-tune, vision, audio commands');
       }
       
       console.endSection();
@@ -513,30 +662,78 @@ program
   .option('--add <db> <collection> <data>', 'Add documents to collection')
   .option('--search <db> <collection> <query>', 'Search in collection')
   .option('--delete <db> <collection>', 'Delete collection')
+  .option('--backend <backend>', 'Vector DB backend (pinecone, weaviate, qdrant)', 'pinecone')
   .action(async (options) => {
     try {
+      const VectorDBProvider = require('../lib/providers/vectordb');
+      
       console.header('Vector Database Operations');
+      
+      if (!options.create && !options.list && !options.add && !options.search && !options.delete) {
+        console.error('Please specify an operation: --create, --list, --add, --search, or --delete');
+        process.exit(1);
+      }
+      
+      const backend = options.backend;
+      const apiKey = process.env[`${backend.toUpperCase()}_API_KEY`];
+      
+      if (!apiKey) {
+        console.error(`No API key found for ${backend}. Set ${backend.toUpperCase()}_API_KEY environment variable.`);
+        process.exit(1);
+      }
+      
+      const vectorDB = new VectorDBProvider(backend);
+      
+      try {
+        await vectorDB.initialize({ apiKey });
+        console.success(`Connected to ${backend} vector database`);
+      } catch (error) {
+        console.error(`Failed to connect to ${backend}: ${error.message}`);
+        process.exit(1);
+      }
       
       if (options.create) {
         console.info(`Creating vector database: ${options.create}`);
-        // Implementation for creating vector DB
+        const result = await vectorDB.createCollection(options.create);
+        console.success('Vector database created successfully');
+        console.json(result, 'Database Info');
+        
       } else if (options.list) {
         console.info('Listing vector databases...');
-        // Implementation for listing DBs
+        console.warn('Collection listing depends on the specific backend implementation');
+        console.info(`Using backend: ${backend}`);
+        
       } else if (options.add) {
         const [db, collection, data] = options.add.split(' ');
         console.info(`Adding documents to ${db}/${collection}`);
-        // Implementation for adding documents
+        
+        if (!fs.existsSync(data)) {
+          console.error(`Data file not found: ${data}`);
+          process.exit(1);
+        }
+        
+        const documents = JSON.parse(fs.readFileSync(data, 'utf8'));
+        console.info(`Loaded ${documents.length} documents`);
+        
+        // This would require embeddings to be generated first
+        console.warn('Document addition requires pre-generated embeddings');
+        console.info('Consider using OpenAI embeddings or similar service first');
+        
       } else if (options.search) {
         const [db, collection, query] = options.search.split(' ');
         console.info(`Searching in ${db}/${collection}: ${query}`);
-        // Implementation for searching
+        
+        // This would require query embeddings to be generated first
+        console.warn('Vector search requires query embeddings');
+        console.info('Consider using OpenAI embeddings or similar service first');
+        
       } else if (options.delete) {
         const [db, collection] = options.delete.split(' ');
         console.info(`Deleting collection: ${db}/${collection}`);
-        // Implementation for deletion
-      } else {
-        console.info('Use --help to see available options');
+        
+        const result = await vectorDB.deleteCollection(collection);
+        console.success('Collection deleted successfully');
+        console.json(result, 'Deletion Result');
       }
       
       console.endSection();

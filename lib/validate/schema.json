@@ -56,13 +56,20 @@
           "properties": {
             "type": {
               "type": "string",
-              "enum": ["input", "env", "literal"]
+              "enum": ["input", "env", "literal", "string", "number", "boolean"]
             },
             "path": {
               "type": "string"
             },
             "value": {
               "type": ["string", "number", "boolean"]
+            },
+            "from": {
+              "type": "string",
+              "enum": ["input", "env", "literal"]
+            },
+            "required": {
+              "type": "boolean"
             }
           }
         }
@@ -81,7 +88,7 @@
           },
           "kind": {
             "type": "string",
-            "enum": ["llm", "http", "function"]
+            "enum": ["llm", "http", "function", "vision", "audio", "vectordb", "finetune"]
           },
           "model": {
             "type": "string"
@@ -120,6 +127,66 @@
           },
           "body": {
             "type": ["object", "string"]
+          },
+          "input": {
+            "type": "string"
+          },
+          "operation": {
+            "type": "string"
+          },
+          "backend": {
+            "type": "string"
+          },
+          "collection": {
+            "type": "string"
+          },
+          "query": {
+            "type": "string"
+          },
+          "topK": {
+            "type": "integer"
+          },
+          "filter": {
+            "type": "object"
+          },
+          "documents": {
+            "type": "array"
+          },
+          "embeddings": {
+            "type": "array"
+          },
+          "config": {
+            "type": "object"
+          },
+          "jobId": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          },
+          "filePath": {
+            "type": "string"
+          },
+          "format": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "audio": {
+            "type": "string"
+          },
+          "voice": {
+            "type": "string"
+          },
+          "outputPath": {
+            "type": "string"
+          },
+          "function": {
+            "type": "string"
+          },
+          "args": {
+            "type": "object"
           }
         },
         "anyOf": [
@@ -144,8 +211,45 @@
           },
           {
             "properties": {
-              "kind": { "const": "function" }
+              "kind": { "const": "function" },
+              "function": { "type": "string" }
             },
+            "required": ["function"],
+            "additionalProperties": true
+          },
+          {
+            "properties": {
+              "kind": { "const": "vision" },
+              "model": { "type": "string" },
+              "input": { "type": "string" }
+            },
+            "required": ["model", "input"],
+            "additionalProperties": true
+          },
+          {
+            "properties": {
+              "kind": { "const": "audio" },
+              "operation": { "type": "string" }
+            },
+            "required": ["operation"],
+            "additionalProperties": true
+          },
+          {
+            "properties": {
+              "kind": { "const": "vectordb" },
+              "operation": { "type": "string" },
+              "backend": { "type": "string" }
+            },
+            "required": ["operation", "backend"],
+            "additionalProperties": true
+          },
+          {
+            "properties": {
+              "kind": { "const": "finetune" },
+              "operation": { "type": "string" },
+              "provider": { "type": "string" }
+            },
+            "required": ["operation", "provider"],
             "additionalProperties": true
           }
         ]

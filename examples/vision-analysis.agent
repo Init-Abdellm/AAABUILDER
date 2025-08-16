@@ -1,0 +1,102 @@
+@agent vision-analyzer v1
+description: "Advanced computer vision analysis agent"
+trigger:
+  type: http
+  method: POST
+  path: /vision/analyze
+
+secrets:
+  - name: OPENAI
+    type: env
+    value: OPENAI_API_KEY
+  - name: HF
+    type: env
+    value: HUGGINGFACE_KEY
+
+vars:
+  image:
+    type: string
+    from: input
+    required: true
+  analysis_type:
+    type: string
+    from: input
+    default: "comprehensive"
+  provider:
+    type: string
+    from: input
+    default: "openai"
+
+steps:
+  - id: classify
+    kind: vision
+    model: gpt-4o-vision
+    provider: openai
+    input: "{image}"
+    operation: classify
+    when: "{provider} == 'openai'"
+    save: classification
+
+  - id: classify_hf
+    kind: vision
+    model: microsoft/DialoGPT-large
+    provider: huggingface
+    input: "{image}"
+    operation: classify
+    when: "{provider} == 'huggingface'"
+    save: classification
+
+  - id: describe
+    kind: vision
+    model: gpt-4o-vision
+    provider: openai
+    input: "{image}"
+    operation: describe
+    when: "{provider} == 'openai'"
+    save: description
+
+  - id: describe_hf
+    kind: vision
+    model: microsoft/DialoGPT-large
+    provider: huggingface
+    input: "{image}"
+    operation: describe
+    when: "{provider} == 'huggingface'"
+    save: description
+
+  - id: caption
+    kind: vision
+    model: gpt-4o-vision
+    provider: openai
+    input: "{image}"
+    operation: caption
+    when: "{provider} == 'openai'"
+    save: caption
+
+  - id: caption_hf
+    kind: vision
+    model: microsoft/DialoGPT-large
+    provider: huggingface
+    input: "{image}"
+    operation: caption
+    when: "{provider} == 'huggingface'"
+    save: caption
+
+  - id: synthesize
+    kind: llm
+    provider: openai
+    model: gpt-4o
+    prompt: |
+      Based on the vision analysis results, provide a comprehensive summary:
+      
+      Classification: {classification}
+      Description: {description}
+      Caption: {caption}
+      
+      Analysis Type: {analysis_type}
+      
+      Please provide insights about what this image shows, any notable features, and potential applications or concerns.
+    save: analysis_summary
+
+output "{classification} | {description} | {caption} | {analysis_summary}"
+@end

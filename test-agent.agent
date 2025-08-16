@@ -1,0 +1,15 @@
+@agent test-agent v1
+trigger http POST /test-agent
+var message = input.message
+
+step process:
+  kind llm
+  model gpt-4o
+  provider openai
+  prompt """
+    Process this message: {message}
+  """
+  save result
+
+output result
+@end
