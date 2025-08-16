@@ -57,6 +57,7 @@
     "@pinecone-database/pinecone": "^1.1.2",
     "@qdrant/qdrant-js": "^1.15.1",
     "@tensorflow/tfjs": "^4.22.0",
+    "@tensorflow/tfjs-backend-cpu": "^4.22.0",
     "@tensorflow/tfjs-node": "^4.22.0",
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
