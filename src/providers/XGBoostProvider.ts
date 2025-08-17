@@ -18,10 +18,10 @@ export class XGBoostProvider extends ModelProvider {
 
   constructor(config: Record<string, any> = {}) {
     super('xgboost', 'gradient-boosting', {
-      pythonPath: config.pythonPath || 'python',
-      timeout: config.timeout || 60000,
-      maxConcurrency: config.maxConcurrency || 2,
-      enableGPU: config.enableGPU || false,
+      pythonPath: config['pythonPath'] || 'python',
+      timeout: config['timeout'] || 60000,
+      maxConcurrency: config['maxConcurrency'] || 2,
+      enableGPU: config['enableGPU'] || false,
       ...config
     });
   }
@@ -50,7 +50,28 @@ export class XGBoostProvider extends ModelProvider {
       const result = await this.executeXGBoostModel(xgbRequest);
       
       // Process response
-      const response = await this.processResponse(result, request);
+      const baseResponse: ModelResponse = {
+        content: {
+          predictions: result.predictions,
+          probabilities: result.probabilities,
+          feature_importance: result.feature_importance,
+          metrics: result.model_metrics,
+          model_info: result.model_info
+        },
+        model: request.model,
+        usage: {
+          inputSize: this.calculateInputSize(request.input),
+          outputSize: result.predictions?.length || 0,
+          processingTime: 0
+        },
+        finishReason: 'completed',
+        metadata: {
+          provider: this.name,
+          model_type: 'xgboost',
+          objective: result.model_info?.objective || 'unknown'
+        }
+      };
+      const response = await this.processResponse(baseResponse);
       
       const duration = Date.now() - startTime;
       
@@ -71,11 +92,7 @@ export class XGBoostProvider extends ModelProvider {
     return {
       supportedTypes: ['MLP', 'Transformer'],
       capabilities: [
-        'classification',
-        'regression',
-        'ranking',
-        'anomaly-detection',
-        'feature-selection'
+        'text-generation'
       ],
       maxInputSize: 10000000, // 10M features
       maxOutputSize: 1000000,
@@ -83,13 +100,13 @@ export class XGBoostProvider extends ModelProvider {
       fineTuning: true,
       multimodal: false,
       batchProcessing: true,
-      gpuAcceleration: this.config.enableGPU
+      gpuAcceleration: this.config['enableGPU']
     };
   }
 
   validateConfig(config: ModelConfig): ValidationResult {
-    const errors = [];
-    const warnings = [];
+    const errors: any[] = [];
+    const warnings: any[] = [];
 
     // Validate model name
     if (!config.model) {
@@ -122,12 +139,12 @@ export class XGBoostProvider extends ModelProvider {
         provider: this.name,
         capabilities: this.getCapabilities(),
         parameters: {
-          objective: 'multi:softprob',
-          max_depth: 6,
-          learning_rate: 0.1,
-          n_estimators: 100,
-          subsample: 1.0,
-          colsample_bytree: 1.0
+          'objective': 'multi:softprob',
+          'max_depth': 6,
+          'learning_rate': 0.1,
+          'n_estimators': 100,
+          'subsample': 1.0,
+          'colsample_bytree': 1.0
         },
         metadata: {
           version: '2.0.0',
@@ -146,10 +163,10 @@ export class XGBoostProvider extends ModelProvider {
         provider: this.name,
         capabilities: this.getCapabilities(),
         parameters: {
-          objective: 'binary:logistic',
-          max_depth: 6,
-          learning_rate: 0.1,
-          n_estimators: 100
+          'objective': 'binary:logistic',
+          'max_depth': 6,
+          'learning_rate': 0.1,
+          'n_estimators': 100
         },
         metadata: {
           version: '2.0.0',
@@ -169,11 +186,11 @@ export class XGBoostProvider extends ModelProvider {
         provider: this.name,
         capabilities: this.getCapabilities(),
         parameters: {
-          objective: 'reg:squarederror',
-          max_depth: 6,
-          learning_rate: 0.1,
-          n_estimators: 100,
-          subsample: 1.0
+          'objective': 'reg:squarederror',
+          'max_depth': 6,
+          'learning_rate': 0.1,
+          'n_estimators': 100,
+          'subsample': 1.0
         },
         metadata: {
           version: '2.0.0',
@@ -193,10 +210,10 @@ export class XGBoostProvider extends ModelProvider {
         provider: this.name,
         capabilities: this.getCapabilities(),
         parameters: {
-          objective: 'rank:pairwise',
-          max_depth: 6,
-          learning_rate: 0.1,
-          n_estimators: 100
+          'objective': 'rank:pairwise',
+          'max_depth': 6,
+          'learning_rate': 0.1,
+          'n_estimators': 100
         },
         metadata: {
           version: '2.0.0',
@@ -208,19 +225,19 @@ export class XGBoostProvider extends ModelProvider {
       },
 
       // GPU-Accelerated Models (if enabled)
-      ...(this.config.enableGPU ? [{
+      ...(this.config['enableGPU'] ? [{
         id: 'xgboost-gpu-classifier',
         name: 'XGBoost GPU Classifier',
         type: 'MLP' as ModelType,
         provider: this.name,
         capabilities: this.getCapabilities(),
         parameters: {
-          objective: 'multi:softprob',
-          max_depth: 6,
-          learning_rate: 0.1,
-          n_estimators: 100,
-          tree_method: 'gpu_hist',
-          gpu_id: 0
+          'objective': 'multi:softprob',
+          'max_depth': 6,
+          'learning_rate': 0.1,
+          'n_estimators': 100,
+          'tree_method': 'gpu_hist',
+          'gpu_id': 0
         },
         metadata: {
           version: '2.0.0',
@@ -255,7 +272,7 @@ export class XGBoostProvider extends ModelProvider {
     }
   }
 
-  async initialize(): Promise<void> {
+  override async initialize(): Promise<void> {
     try {
       // Initialize Python bridge
       await this.initializePythonBridge();
@@ -267,7 +284,7 @@ export class XGBoostProvider extends ModelProvider {
       }
 
       // Check GPU availability if enabled
-      if (this.config.enableGPU) {
+      if (this.config['enableGPU']) {
         await this.checkGPUAvailability();
       }
 
@@ -460,30 +477,9 @@ export class XGBoostProvider extends ModelProvider {
     return 1;
   }
 
-  protected async processResponse(result: any, request: ModelRequest): Promise<ModelResponse> {
-    return {
-      content: {
-        predictions: result.predictions,
-        probabilities: result.probabilities,
-        feature_importance: result.feature_importance,
-        metrics: result.model_metrics,
-        model_info: result.model_info
-      },
-      model: request.model,
-      usage: {
-        inputSize: this.calculateInputSize(request.input),
-        outputSize: result.predictions.length,
-        processingTime: 0 // Will be set by caller
-      },
-      finishReason: 'completed',
-      metadata: {
-        provider: this.name,
-        task_type: result.model_info.task_type,
-        objective: result.model_info.objective,
-        n_features: result.model_info.n_features,
-        n_estimators: result.model_info.n_estimators
-      }
-    };
+  protected override async processResponse(response: ModelResponse): Promise<ModelResponse> {
+    // Add any XGBoost-specific post-processing here
+    return response;
   }
 
   private calculateInputSize(input: any): number {
@@ -558,7 +554,7 @@ export class XGBoostProvider extends ModelProvider {
     };
   }
 
-  private async executePythonCommand(args: string[]): Promise<{ success: boolean; output?: string; error?: string }> {
+  private async executePythonCommand(_args: string[]): Promise<{ success: boolean; output?: string; error?: string }> {
     // Mock Python command execution
     return {
       success: true,
@@ -575,11 +571,11 @@ export class XGBoostProvider extends ModelProvider {
       
       if (result.output?.includes('GPU not available')) {
         console.warn('GPU acceleration requested but not available, falling back to CPU');
-        this.config.enableGPU = false;
+        this.config['enableGPU'] = false;
       }
     } catch (error) {
       console.warn('Could not check GPU availability:', error);
-      this.config.enableGPU = false;
+      this.config['enableGPU'] = false;
     }
   }
 }

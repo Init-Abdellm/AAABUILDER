@@ -19,11 +19,11 @@ export class TensorFlowProvider extends ModelProvider {
 
   constructor(config: Record<string, any> = {}) {
     super('tensorflow', 'neural-network', {
-      backend: config.backend || 'cpu', // 'cpu', 'webgl', 'nodejs'
-      enableGPU: config.enableGPU || false,
-      memoryGrowth: config.memoryGrowth || true,
-      maxConcurrency: config.maxConcurrency || 2,
-      modelCacheSize: config.modelCacheSize || 10,
+      backend: config['backend'] || 'cpu', // 'cpu', 'webgl', 'nodejs'
+      enableGPU: config['enableGPU'] || false,
+      memoryGrowth: config['memoryGrowth'] || true,
+      maxConcurrency: config['maxConcurrency'] || 2,
+      modelCacheSize: config['modelCacheSize'] || 10,
       ...config
     });
   }
@@ -96,7 +96,7 @@ export class TensorFlowProvider extends ModelProvider {
       fineTuning: true,
       multimodal: true,
       batchProcessing: true,
-      gpuAcceleration: this.config.enableGPU
+      gpuAcceleration: this.config['enableGPU']
     };
   }
 

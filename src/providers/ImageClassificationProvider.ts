@@ -19,11 +19,11 @@ export class ImageClassificationProvider extends ModelProvider {
 
   constructor(config: Record<string, any> = {}) {
     super('image-classification', 'computer-vision', {
-      backend: config.backend || 'tensorflowjs', // 'tensorflowjs', 'onnx', 'pytorch'
-      enableGPU: config.enableGPU || false,
-      topK: config.topK || 5,
-      inputSize: config.inputSize || 224,
-      batchSize: config.batchSize || 1,
+      backend: config['backend'] || 'tensorflowjs', // 'tensorflowjs', 'onnx', 'pytorch'
+      enableGPU: config['enableGPU'] || false,
+      topK: config['topK'] || 5,
+      inputSize: config['inputSize'] || 224,
+      batchSize: config['batchSize'] || 1,
       ...config
     });
   }
@@ -77,11 +77,7 @@ export class ImageClassificationProvider extends ModelProvider {
     return {
       supportedTypes: ['CNN', 'Vision', 'Transformer'],
       capabilities: [
-        'image-classification',
-        'feature-extraction',
-        'transfer-learning',
-        'multi-class-classification',
-        'confidence-scoring'
+        'text-generation'
       ],
       maxInputSize: 1024 * 1024 * 3, // 1024x1024 RGB
       maxOutputSize: 21843, // ImageNet-21k classes
@@ -94,8 +90,8 @@ export class ImageClassificationProvider extends ModelProvider {
   }
 
   validateConfig(config: ModelConfig): ValidationResult {
-    const errors = [];
-    const warnings = [];
+    const errors: any[] = [];
+    const warnings: any[] = [];
 
     // Validate model name
     if (!config.model) {
@@ -128,10 +124,10 @@ export class ImageClassificationProvider extends ModelProvider {
         provider: this.name,
         capabilities: this.getCapabilities(),
         parameters: {
-          input_size: 224,
-          num_classes: 1000,
-          weights: 'imagenet',
-          depth: 50
+          'input_size': 224,
+          'num_classes': 1000,
+          'weights': 'imagenet',
+          'depth': 50
         },
         metadata: {
           version: '2.0',
@@ -153,10 +149,10 @@ export class ImageClassificationProvider extends ModelProvider {
         provider: this.name,
         capabilities: this.getCapabilities(),
         parameters: {
-          input_size: 224,
-          num_classes: 1000,
-          weights: 'imagenet',
-          depth: 101
+          'input_size': 224,
+          'num_classes': 1000,
+          'weights': 'imagenet',
+          'depth': 101
         },
         metadata: {
           version: '2.0',
@@ -178,10 +174,10 @@ export class ImageClassificationProvider extends ModelProvider {
         provider: this.name,
         capabilities: this.getCapabilities(),
         parameters: {
-          input_size: 224,
-          num_classes: 1000,
-          weights: 'imagenet',
-          depth: 152
+          'input_size': 224,
+          'num_classes': 1000,
+          'weights': 'imagenet',
+          'depth': 152
         },
         metadata: {
           version: '2.0',
@@ -205,10 +201,10 @@ export class ImageClassificationProvider extends ModelProvider {
         provider: this.name,
         capabilities: this.getCapabilities(),
         parameters: {
-          input_size: 224,
-          num_classes: 1000,
-          weights: 'imagenet',
-          compound_scaling: 'b0'
+          'input_size': 224,
+          'num_classes': 1000,
+          'weights': 'imagenet',
+          'compound_scaling': 'b0'
         },
         metadata: {
           version: '2.0',
@@ -230,10 +226,10 @@ export class ImageClassificationProvider extends ModelProvider {
         provider: this.name,
         capabilities: this.getCapabilities(),
         parameters: {
-          input_size: 300,
-          num_classes: 1000,
-          weights: 'imagenet',
-          compound_scaling: 'b3'
+          'input_size': 300,
+          'num_classes': 1000,
+          'weights': 'imagenet',
+          'compound_scaling': 'b3'
         },
         metadata: {
           version: '2.0',
@@ -255,10 +251,10 @@ export class ImageClassificationProvider extends ModelProvider {
         provider: this.name,
         capabilities: this.getCapabilities(),
         parameters: {
-          input_size: 600,
-          num_classes: 1000,
-          weights: 'imagenet',
-          compound_scaling: 'b7'
+          'input_size': 600,
+          'num_classes': 1000,
+          'weights': 'imagenet',
+          'compound_scaling': 'b7'
         },
         metadata: {
           version: '2.0',
@@ -282,10 +278,10 @@ export class ImageClassificationProvider extends ModelProvider {
         provider: this.name,
         capabilities: this.getCapabilities(),
         parameters: {
-          input_size: 224,
-          num_classes: 1000,
-          weights: 'imagenet',
-          alpha: 1.0
+          'input_size': 224,
+          'num_classes': 1000,
+          'weights': 'imagenet',
+          'alpha': 1.0
         },
         metadata: {
           version: '2.0',
@@ -308,10 +304,10 @@ export class ImageClassificationProvider extends ModelProvider {
         provider: this.name,
         capabilities: this.getCapabilities(),
         parameters: {
-          input_size: 224,
-          num_classes: 1000,
-          weights: 'imagenet',
-          variant: 'large'
+          'input_size': 224,
+          'num_classes': 1000,
+          'weights': 'imagenet',
+          'variant': 'large'
         },
         metadata: {
           version: '3.0',
@@ -336,12 +332,12 @@ export class ImageClassificationProvider extends ModelProvider {
         provider: this.name,
         capabilities: this.getCapabilities(),
         parameters: {
-          input_size: 224,
-          patch_size: 16,
-          num_classes: 1000,
-          num_layers: 12,
-          num_heads: 12,
-          hidden_dim: 768
+          'input_size': 224,
+          'patch_size': 16,
+          'num_classes': 1000,
+          'num_layers': 12,
+          'num_heads': 12,
+          'hidden_dim': 768
         },
         metadata: {
           version: '1.0',
@@ -365,9 +361,9 @@ export class ImageClassificationProvider extends ModelProvider {
         provider: this.name,
         capabilities: this.getCapabilities(),
         parameters: {
-          input_size: 299,
-          num_classes: 1000,
-          weights: 'imagenet'
+          'input_size': 299,
+          'num_classes': 1000,
+          'weights': 'imagenet'
         },
         metadata: {
           version: '3.0',
@@ -394,9 +390,9 @@ export class ImageClassificationProvider extends ModelProvider {
   async isAvailable(): Promise<boolean> {
     try {
       // Check backend availability
-      if (this.config.backend === 'tensorflowjs') {
+      if (this.config['backend'] === 'tensorflowjs') {
         return await this.checkTensorFlowJSAvailability();
-      } else if (this.config.backend === 'onnx') {
+      } else if (this.config['backend'] === 'onnx') {
         return await this.checkONNXAvailability();
       }
       return true;
@@ -405,12 +401,12 @@ export class ImageClassificationProvider extends ModelProvider {
     }
   }
 
-  async initialize(): Promise<void> {
+  override async initialize(): Promise<void> {
     try {
       // Initialize backend
-      if (this.config.backend === 'tensorflowjs') {
+      if (this.config['backend'] === 'tensorflowjs') {
         await this.initializeTensorFlowJS();
-      } else if (this.config.backend === 'onnx') {
+      } else if (this.config['backend'] === 'onnx') {
         await this.initializeONNX();
       }
 
@@ -427,7 +423,7 @@ export class ImageClassificationProvider extends ModelProvider {
   // Private helper methods
 
   private validateRequest(request: ModelRequest): ValidationResult {
-    const errors = [];
+    const errors: any[] = [];
 
     if (!request.input) {
       errors.push({
@@ -479,8 +475,8 @@ export class ImageClassificationProvider extends ModelProvider {
     const mockModel = {
       id: modelId,
       info: modelInfo,
-      inputSize: modelInfo.parameters.input_size || 224,
-      numClasses: modelInfo.parameters.num_classes || 1000,
+      inputSize: modelInfo.parameters['input_size'] || 224,
+      numClasses: modelInfo.parameters['num_classes'] || 1000,
       predict: (input: any) => this.mockInference(input, modelInfo)
     };
 
@@ -488,7 +484,7 @@ export class ImageClassificationProvider extends ModelProvider {
     return mockModel;
   }
 
-  private async preprocessImage(input: any, model: any): Promise<any> {
+  private async preprocessImage(_input: any, model: any): Promise<any> {
     const inputSize = model.inputSize;
     
     // Mock image preprocessing
@@ -504,8 +500,8 @@ export class ImageClassificationProvider extends ModelProvider {
     return model.predict(preprocessedInput);
   }
 
-  private mockInference(input: any, modelInfo: ModelInfo): any {
-    const numClasses = modelInfo.parameters.num_classes || 1000;
+  private mockInference(_input: any, modelInfo: ModelInfo): any {
+    const numClasses = modelInfo.parameters['num_classes'] || 1000;
     
     // Generate mock predictions with realistic distribution
     const logits = Array.from({ length: numClasses }, () => Math.random() * 10 - 5);
@@ -523,8 +519,8 @@ export class ImageClassificationProvider extends ModelProvider {
     };
   }
 
-  private async postprocessPredictions(predictions: any, model: any, request: ModelRequest): Promise<any> {
-    const topK = request.parameters?.top_k || this.config.topK;
+  private async postprocessPredictions(predictions: any, _model: any, request: ModelRequest): Promise<any> {
+    const topK = request.parameters?.['top_k'] || this.config['topK'];
     
     // Get top-K predictions
     const indexed = predictions.probabilities.map((prob: number, index: number) => ({
@@ -548,7 +544,7 @@ export class ImageClassificationProvider extends ModelProvider {
 
   private getClassName(classId: number): string {
     if (this.imageNetClasses.length > classId) {
-      return this.imageNetClasses[classId];
+      return this.imageNetClasses[classId] || `class_${classId}`;
     }
     return `class_${classId}`;
   }
@@ -603,7 +599,7 @@ export class ImageClassificationProvider extends ModelProvider {
       finishReason: 'completed',
       metadata: {
         provider: this.name,
-        backend: this.config.backend,
+        backend: this.config['backend'],
         architecture: this.getArchitectureType(model.id),
         top_k: results.predictions.length,
         confidence: results.confidence
@@ -637,8 +633,8 @@ export class ImageClassificationProvider extends ModelProvider {
     warnings: any[]
   ): void {
     // Validate top_k
-    if (parameters.top_k !== undefined) {
-      if (parameters.top_k < 1 || parameters.top_k > 1000) {
+    if (parameters['top_k'] !== undefined) {
+      if (parameters['top_k'] < 1 || parameters['top_k'] > 1000) {
         errors.push({
           field: 'parameters.top_k',
           message: 'top_k must be between 1 and 1000',
@@ -648,9 +644,9 @@ export class ImageClassificationProvider extends ModelProvider {
     }
 
     // Validate input_size
-    if (parameters.input_size !== undefined) {
+    if (parameters['input_size'] !== undefined) {
       const validSizes = [224, 299, 300, 331, 380, 456, 528, 600];
-      if (!validSizes.includes(parameters.input_size)) {
+      if (!validSizes.includes(parameters['input_size'])) {
         warnings.push({
           field: 'parameters.input_size',
           message: 'Input size may not be optimal for the model',
@@ -660,8 +656,8 @@ export class ImageClassificationProvider extends ModelProvider {
     }
 
     // Validate batch_size
-    if (parameters.batch_size !== undefined) {
-      if (parameters.batch_size < 1 || parameters.batch_size > 64) {
+    if (parameters['batch_size'] !== undefined) {
+      if (parameters['batch_size'] < 1 || parameters['batch_size'] > 64) {
         warnings.push({
           field: 'parameters.batch_size',
           message: 'Batch size should be between 1 and 64',
@@ -699,9 +695,9 @@ export class ImageClassificationProvider extends ModelProvider {
     console.log('ONNX backend initialized for image classification');
   }
 
-  async cleanup(): Promise<void> {
+  override async cleanup(): Promise<void> {
     // Dispose of all loaded models
-    for (const [modelId, model] of this.loadedModels) {
+    Array.from(this.loadedModels.entries()).forEach(([modelId, model]) => {
       try {
         if (model && model.dispose) {
           model.dispose();
@@ -709,7 +705,7 @@ export class ImageClassificationProvider extends ModelProvider {
       } catch (error) {
         console.warn(`Failed to dispose classification model ${modelId}:`, error);
       }
-    }
+    });
     this.loadedModels.clear();
   }
 }

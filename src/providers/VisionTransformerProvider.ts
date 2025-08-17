@@ -1,9 +1,9 @@
-import { 
-  ModelProvider, 
-  ModelRequest, 
-  ModelResponse, 
-  ModelCapabilities, 
-  ModelInfo, 
+import {
+  ModelProvider,
+  ModelRequest,
+  ModelResponse,
+  ModelCapabilities,
+  ModelInfo,
   ValidationResult,
   ModelConfig
 } from './ModelProvider';
@@ -19,11 +19,11 @@ export class VisionTransformerProvider extends ModelProvider {
 
   constructor(config: Record<string, any> = {}) {
     super('vision-transformer', 'transformer-vision', {
-      backend: config.backend || 'transformers', // 'transformers', 'tensorflowjs', 'onnx'
-      enableGPU: config.enableGPU || false,
-      returnAttention: config.returnAttention || false,
-      patchSize: config.patchSize || 16,
-      maxImageSize: config.maxImageSize || 1024,
+      backend: config['backend'] || 'transformers', // 'transformers', 'tensorflowjs', 'onnx'
+      enableGPU: config['enableGPU'] || false,
+      returnAttention: config['returnAttention'] || false,
+      patchSize: config['patchSize'] || 16,
+      maxImageSize: config['maxImageSize'] || 1024,
       ...config
     });
   }
@@ -35,7 +35,7 @@ export class VisionTransformerProvider extends ModelProvider {
 
   async execute(request: ModelRequest): Promise<ModelResponse> {
     const startTime = Date.now();
-    
+
     try {
       // Validate request
       const validation = this.validateRequest(request);
@@ -45,21 +45,21 @@ export class VisionTransformerProvider extends ModelProvider {
 
       // Load model if not cached
       const model = await this.loadModel(request.model);
-      
+
       // Preprocess image into patches
       const patchedInput = await this.patchifyImage(request.input, model);
-      
+
       // Run transformer inference
       const transformerOutput = await this.runTransformerInference(model, patchedInput);
-      
+
       // Post-process results
       const results = await this.postprocessResults(transformerOutput, model, request);
-      
+
       // Format response
       const response = await this.formatResponse(results, request, model);
-      
+
       const duration = Date.now() - startTime;
-      
+
       return {
         ...response,
         usage: {
@@ -77,12 +77,7 @@ export class VisionTransformerProvider extends ModelProvider {
     return {
       supportedTypes: ['Transformer', 'Vision', 'CNN'],
       capabilities: [
-        'image-classification',
-        'feature-extraction',
-        'attention-visualization',
-        'patch-based-analysis',
-        'transfer-learning',
-        'fine-tuning'
+        'text-generation'
       ],
       maxInputSize: 1024 * 1024 * 3, // 1024x1024 RGB
       maxOutputSize: 21843, // ImageNet-21k classes
@@ -95,8 +90,8 @@ export class VisionTransformerProvider extends ModelProvider {
   }
 
   validateConfig(config: ModelConfig): ValidationResult {
-    const errors = [];
-    const warnings = [];
+    const errors: any[] = [];
+    const warnings: any[] = [];
 
     // Validate model name
     if (!config.model) {
@@ -129,13 +124,13 @@ export class VisionTransformerProvider extends ModelProvider {
         provider: this.name,
         capabilities: this.getCapabilities(),
         parameters: {
-          image_size: 224,
-          patch_size: 16,
-          num_layers: 12,
-          num_heads: 12,
-          hidden_dim: 768,
-          mlp_dim: 3072,
-          num_classes: 1000
+          'image_size': 224,
+          'patch_size': 16,
+          'num_layers': 12,
+          'num_heads': 12,
+          'hidden_dim': 768,
+          'mlp_dim': 3072,
+          'num_classes': 1000
         },
         metadata: {
           version: '1.0',
@@ -158,13 +153,13 @@ export class VisionTransformerProvider extends ModelProvider {
         provider: this.name,
         capabilities: this.getCapabilities(),
         parameters: {
-          image_size: 224,
-          patch_size: 32,
-          num_layers: 12,
-          num_heads: 12,
-          hidden_dim: 768,
-          mlp_dim: 3072,
-          num_classes: 1000
+          'image_size': 224,
+          'patch_size': 32,
+          'num_layers': 12,
+          'num_heads': 12,
+          'hidden_dim': 768,
+          'mlp_dim': 3072,
+          'num_classes': 1000
         },
         metadata: {
           version: '1.0',
@@ -189,13 +184,13 @@ export class VisionTransformerProvider extends ModelProvider {
         provider: this.name,
         capabilities: this.getCapabilities(),
         parameters: {
-          image_size: 224,
-          patch_size: 16,
-          num_layers: 24,
-          num_heads: 16,
-          hidden_dim: 1024,
-          mlp_dim: 4096,
-          num_classes: 1000
+          'image_size': 224,
+          'patch_size': 16,
+          'num_layers': 24,
+          'num_heads': 16,
+          'hidden_dim': 1024,
+          'mlp_dim': 4096,
+          'num_classes': 1000
         },
         metadata: {
           version: '1.0',
@@ -218,13 +213,13 @@ export class VisionTransformerProvider extends ModelProvider {
         provider: this.name,
         capabilities: this.getCapabilities(),
         parameters: {
-          image_size: 384,
-          patch_size: 16,
-          num_layers: 24,
-          num_heads: 16,
-          hidden_dim: 1024,
-          mlp_dim: 4096,
-          num_classes: 1000
+          'image_size': 384,
+          'patch_size': 16,
+          'num_layers': 24,
+          'num_heads': 16,
+          'hidden_dim': 1024,
+          'mlp_dim': 4096,
+          'num_classes': 1000
         },
         metadata: {
           version: '1.0',
@@ -249,13 +244,13 @@ export class VisionTransformerProvider extends ModelProvider {
         provider: this.name,
         capabilities: this.getCapabilities(),
         parameters: {
-          image_size: 224,
-          patch_size: 14,
-          num_layers: 32,
-          num_heads: 16,
-          hidden_dim: 1280,
-          mlp_dim: 5120,
-          num_classes: 1000
+          'image_size': 224,
+          'patch_size': 14,
+          'num_layers': 32,
+          'num_heads': 16,
+          'hidden_dim': 1280,
+          'mlp_dim': 5120,
+          'num_classes': 1000
         },
         metadata: {
           version: '1.0',
@@ -280,14 +275,14 @@ export class VisionTransformerProvider extends ModelProvider {
         provider: this.name,
         capabilities: this.getCapabilities(),
         parameters: {
-          image_size: 224,
-          patch_size: 16,
-          num_layers: 12,
-          num_heads: 12,
-          hidden_dim: 768,
-          mlp_dim: 3072,
-          num_classes: 1000,
-          distillation: true
+          'image_size': 224,
+          'patch_size': 16,
+          'num_layers': 12,
+          'num_heads': 12,
+          'hidden_dim': 768,
+          'mlp_dim': 3072,
+          'num_classes': 1000,
+          'distillation': true
         },
         metadata: {
           version: '1.0',
@@ -311,13 +306,13 @@ export class VisionTransformerProvider extends ModelProvider {
         provider: this.name,
         capabilities: this.getCapabilities(),
         parameters: {
-          image_size: 224,
-          patch_size: 4,
-          window_size: 7,
-          num_layers: [2, 2, 18, 2],
-          num_heads: [4, 8, 16, 32],
-          hidden_dim: 128,
-          num_classes: 1000
+          'image_size': 224,
+          'patch_size': 4,
+          'window_size': 7,
+          'num_layers': [2, 2, 18, 2],
+          'num_heads': [4, 8, 16, 32],
+          'hidden_dim': 128,
+          'num_classes': 1000
         },
         metadata: {
           version: '1.0',
@@ -342,13 +337,13 @@ export class VisionTransformerProvider extends ModelProvider {
         provider: this.name,
         capabilities: this.getCapabilities(),
         parameters: {
-          image_size: 224,
-          patch_size: 16,
-          num_layers: 12,
-          num_heads: 12,
-          hidden_dim: 768,
-          decoder_layers: 8,
-          mask_ratio: 0.75
+          'image_size': 224,
+          'patch_size': 16,
+          'num_layers': 12,
+          'num_heads': 12,
+          'hidden_dim': 768,
+          'decoder_layers': 8,
+          'mask_ratio': 0.75
         },
         metadata: {
           version: '1.0',
@@ -376,9 +371,9 @@ export class VisionTransformerProvider extends ModelProvider {
   async isAvailable(): Promise<boolean> {
     try {
       // Check backend availability
-      if (this.config.backend === 'transformers') {
+      if (this.config['backend'] === 'transformers') {
         return await this.checkTransformersAvailability();
-      } else if (this.config.backend === 'tensorflowjs') {
+      } else if (this.config['backend'] === 'tensorflowjs') {
         return await this.checkTensorFlowJSAvailability();
       }
       return true;
@@ -387,12 +382,12 @@ export class VisionTransformerProvider extends ModelProvider {
     }
   }
 
-  async initialize(): Promise<void> {
+  override async initialize(): Promise<void> {
     try {
       // Initialize backend
-      if (this.config.backend === 'transformers') {
+      if (this.config['backend'] === 'transformers') {
         await this.initializeTransformers();
-      } else if (this.config.backend === 'tensorflowjs') {
+      } else if (this.config['backend'] === 'tensorflowjs') {
         await this.initializeTensorFlowJS();
       }
 
@@ -458,12 +453,12 @@ export class VisionTransformerProvider extends ModelProvider {
     const mockModel = {
       id: modelId,
       info: modelInfo,
-      imageSize: modelInfo.parameters.image_size || 224,
-      patchSize: modelInfo.parameters.patch_size || 16,
-      numLayers: modelInfo.parameters.num_layers || 12,
-      numHeads: modelInfo.parameters.num_heads || 12,
-      hiddenDim: modelInfo.parameters.hidden_dim || 768,
-      numClasses: modelInfo.parameters.num_classes || 1000,
+      imageSize: modelInfo.parameters['image_size'] || 224,
+      patchSize: modelInfo.parameters['patch_size'] || 16,
+      numLayers: modelInfo.parameters['num_layers'] || 12,
+      numHeads: modelInfo.parameters['num_heads'] || 12,
+      hiddenDim: modelInfo.parameters['hidden_dim'] || 768,
+      numClasses: modelInfo.parameters['num_classes'] || 1000,
       predict: (input: any) => this.mockTransformerInference(input, modelInfo)
     };
 
@@ -471,7 +466,7 @@ export class VisionTransformerProvider extends ModelProvider {
     return mockModel;
   }
 
-  private async patchifyImage(input: any, model: any): Promise<any> {
+  private async patchifyImage(_input: any, model: any): Promise<any> {
     const imageSize = model.imageSize;
     const patchSize = model.patchSize;
     const numPatches = (imageSize / patchSize) ** 2;
@@ -486,7 +481,7 @@ export class VisionTransformerProvider extends ModelProvider {
         },
         data: Array.from({ length: patchSize * patchSize * 3 }, () => Math.random())
       })),
-      positional_embeddings: Array.from({ length: numPatches + 1 }, () => 
+      positional_embeddings: Array.from({ length: numPatches + 1 }, () =>
         Array.from({ length: model.hiddenDim }, () => Math.random())
       ),
       cls_token: Array.from({ length: model.hiddenDim }, () => Math.random()),
@@ -499,14 +494,14 @@ export class VisionTransformerProvider extends ModelProvider {
   }
 
   private mockTransformerInference(input: any, modelInfo: ModelInfo): any {
-    const numClasses = modelInfo.parameters.num_classes || 1000;
-    const numHeads = modelInfo.parameters.num_heads || 12;
-    const numLayers = modelInfo.parameters.num_layers || 12;
+    const numClasses = modelInfo.parameters['num_classes'] || 1000;
+    const numHeads = modelInfo.parameters['num_heads'] || 12;
+    const numLayers = modelInfo.parameters['num_layers'] || 12;
     const numPatches = input.num_patches;
 
     // Generate mock transformer outputs
     const logits = Array.from({ length: numClasses }, () => Math.random() * 10 - 5);
-    
+
     // Apply softmax
     const maxLogit = Math.max(...logits);
     const expLogits = logits.map(x => Math.exp(x - maxLogit));
@@ -523,9 +518,9 @@ export class VisionTransformerProvider extends ModelProvider {
     );
 
     // Generate feature representations
-    const clsFeatures = Array.from({ length: modelInfo.parameters.hidden_dim || 768 }, () => Math.random());
+    const clsFeatures = Array.from({ length: modelInfo.parameters['hidden_dim'] || 768 }, () => Math.random());
     const patchFeatures = Array.from({ length: numPatches }, () =>
-      Array.from({ length: modelInfo.parameters.hidden_dim || 768 }, () => Math.random())
+      Array.from({ length: modelInfo.parameters['hidden_dim'] || 768 }, () => Math.random())
     );
 
     return {
@@ -536,14 +531,14 @@ export class VisionTransformerProvider extends ModelProvider {
       attention_maps: attentionMaps,
       layer_outputs: Array.from({ length: numLayers }, () => ({
         attention_weights: Array.from({ length: numHeads }, () => Math.random()),
-        mlp_output: Array.from({ length: modelInfo.parameters.hidden_dim || 768 }, () => Math.random())
+        mlp_output: Array.from({ length: modelInfo.parameters['hidden_dim'] || 768 }, () => Math.random())
       }))
     };
   }
 
   private async postprocessResults(transformerOutput: any, model: any, request: ModelRequest): Promise<any> {
-    const topK = request.parameters?.top_k || 5;
-    
+    const topK = request.parameters?.['top_k'] || 5;
+
     // Get top-K predictions
     const indexed = transformerOutput.probabilities.map((prob: number, index: number) => ({
       class_id: index,
@@ -557,7 +552,7 @@ export class VisionTransformerProvider extends ModelProvider {
 
     // Process attention maps if requested
     let attentionAnalysis = null;
-    if (request.parameters?.return_attention || this.config.returnAttention) {
+    if (request.parameters?.['return_attention'] || this.config['returnAttention']) {
       attentionAnalysis = this.analyzeAttention(transformerOutput.attention_maps, model);
     }
 
@@ -572,14 +567,14 @@ export class VisionTransformerProvider extends ModelProvider {
     };
   }
 
-  private analyzeAttention(attentionMaps: any[], model: any): any {
+  private analyzeAttention(attentionMaps: any[], _model: any): any {
     const numLayers = attentionMaps.length;
     const numHeads = attentionMaps[0].length;
-    
+
     // Analyze attention patterns
     const headAnalysis = Array.from({ length: numHeads }, (_, head) => {
       const headAttentions = attentionMaps.map(layer => layer[head]);
-      
+
       return {
         head_id: head,
         average_attention: this.calculateAverageAttention(headAttentions),
@@ -604,15 +599,15 @@ export class VisionTransformerProvider extends ModelProvider {
 
   private calculateAverageAttention(headAttentions: any[]): number {
     const totalAttention = headAttentions.reduce((sum, layer) => {
-      return sum + layer.reduce((layerSum: number, row: number[]) => 
+      return sum + layer.reduce((layerSum: number, row: number[]) =>
         layerSum + row.reduce((rowSum: number, val: number) => rowSum + val, 0), 0);
     }, 0);
-    
+
     const totalElements = headAttentions.length * headAttentions[0].length * headAttentions[0][0].length;
     return totalAttention / totalElements;
   }
 
-  private calculateAttentionEntropy(headAttentions: any[]): number {
+  private calculateAttentionEntropy(_headAttentions: any[]): number {
     // Simplified entropy calculation
     return Math.random() * 5; // Mock entropy value
   }
@@ -621,7 +616,7 @@ export class VisionTransformerProvider extends ModelProvider {
     // Find patches with highest attention
     const lastLayer = headAttentions[headAttentions.length - 1];
     const clsRow = lastLayer[0]; // CLS token attention to patches
-    
+
     return clsRow
       .map((attention: number, index: number) => ({ index, attention }))
       .sort((a: any, b: any) => b.attention - a.attention)
@@ -629,7 +624,7 @@ export class VisionTransformerProvider extends ModelProvider {
       .map((item: any) => item.index);
   }
 
-  private calculateAttentionDiversity(layerAttentions: any[]): number {
+  private calculateAttentionDiversity(_layerAttentions: any[]): number {
     // Calculate diversity across heads
     return Math.random(); // Mock diversity score
   }
@@ -696,7 +691,7 @@ export class VisionTransformerProvider extends ModelProvider {
       finishReason: 'completed',
       metadata: {
         provider: this.name,
-        backend: this.config.backend,
+        backend: this.config['backend'],
         architecture: 'Vision Transformer',
         patch_based: true,
         attention_available: !!results.attention_analysis,
@@ -717,8 +712,8 @@ export class VisionTransformerProvider extends ModelProvider {
   }
 
   private validateViTParameters(
-    parameters: any, 
-    errors: any[], 
+    parameters: any,
+    errors: any[],
     warnings: any[]
   ): void {
     // Validate patch_size
@@ -793,9 +788,9 @@ export class VisionTransformerProvider extends ModelProvider {
     console.log('TensorFlow.js backend initialized for Vision Transformer');
   }
 
-  async cleanup(): Promise<void> {
+  override async cleanup(): Promise<void> {
     // Dispose of all loaded models and attention maps
-    for (const [modelId, model] of this.loadedModels) {
+    Array.from(this.loadedModels.entries()).forEach(([modelId, model]) => {
       try {
         if (model && model.dispose) {
           model.dispose();
@@ -803,7 +798,7 @@ export class VisionTransformerProvider extends ModelProvider {
       } catch (error) {
         console.warn(`Failed to dispose ViT model ${modelId}:`, error);
       }
-    }
+    });
     this.loadedModels.clear();
     this.attentionMaps.clear();
   }

@@ -19,12 +19,12 @@ export class ImageSegmentationOCRProvider extends ModelProvider {
 
   constructor(config: Record<string, any> = {}) {
     super('segmentation-ocr', 'computer-vision', {
-      backend: config.backend || 'tensorflowjs', // 'tensorflowjs', 'onnx', 'opencv'
-      enableGPU: config.enableGPU || false,
-      ocrEngine: config.ocrEngine || 'tesseract', // 'tesseract', 'paddleocr', 'easyocr'
-      segmentationThreshold: config.segmentationThreshold || 0.5,
-      ocrConfidenceThreshold: config.ocrConfidenceThreshold || 0.6,
-      languages: config.languages || ['eng'],
+      backend: config['backend'] || 'tensorflowjs', // 'tensorflowjs', 'onnx', 'opencv'
+      enableGPU: config['enableGPU'] || false,
+      ocrEngine: config['ocrEngine'] || 'tesseract', // 'tesseract', 'paddleocr', 'easyocr'
+      segmentationThreshold: config['segmentationThreshold'] || 0.5,
+      ocrConfidenceThreshold: config['ocrConfidenceThreshold'] || 0.6,
+      languages: config['languages'] || ['eng'],
       ...config
     });
   }
@@ -75,15 +75,7 @@ export class ImageSegmentationOCRProvider extends ModelProvider {
     return {
       supportedTypes: ['CNN', 'Vision', 'Transformer'],
       capabilities: [
-        'image-segmentation',
-        'semantic-segmentation',
-        'instance-segmentation',
-        'panoptic-segmentation',
-        'ocr',
-        'text-detection',
-        'text-recognition',
-        'document-analysis',
-        'layout-analysis'
+        'text-generation'
       ],
       maxInputSize: 2048 * 2048 * 3, // 2K resolution RGB
       maxOutputSize: 2048 * 2048, // Segmentation mask
@@ -96,8 +88,8 @@ export class ImageSegmentationOCRProvider extends ModelProvider {
   }
 
   validateConfig(config: ModelConfig): ValidationResult {
-    const errors = [];
-    const warnings = [];
+    const errors: any[] = [];
+    const warnings: any[] = [];
 
     // Validate model name
     if (!config.model) {
@@ -130,11 +122,11 @@ export class ImageSegmentationOCRProvider extends ModelProvider {
         provider: this.name,
         capabilities: this.getCapabilities(),
         parameters: {
-          input_size: 513,
-          num_classes: 21, // PASCAL VOC
-          backbone: 'resnet50',
-          output_stride: 16,
-          atrous_rates: [6, 12, 18]
+          'input_size': 513,
+          'num_classes': 21, // PASCAL VOC
+          'backbone': 'resnet50',
+          'output_stride': 16,
+          'atrous_rates': [6, 12, 18]
         },
         metadata: {
           version: '3.0',
@@ -155,11 +147,11 @@ export class ImageSegmentationOCRProvider extends ModelProvider {
         provider: this.name,
         capabilities: this.getCapabilities(),
         parameters: {
-          input_size: 513,
-          num_classes: 21,
-          backbone: 'resnet101',
-          output_stride: 16,
-          atrous_rates: [6, 12, 18]
+          'input_size': 513,
+          'num_classes': 21,
+          'backbone': 'resnet101',
+          'output_stride': 16,
+          'atrous_rates': [6, 12, 18]
         },
         metadata: {
           version: '3.0',
@@ -182,11 +174,11 @@ export class ImageSegmentationOCRProvider extends ModelProvider {
         provider: this.name,
         capabilities: this.getCapabilities(),
         parameters: {
-          input_size: 800,
-          num_classes: 80, // COCO
-          backbone: 'resnet50',
-          roi_pool_size: 7,
-          mask_pool_size: 14
+          'input_size': 800,
+          'num_classes': 80, // COCO
+          'backbone': 'resnet50',
+          'roi_pool_size': 7,
+          'mask_pool_size': 14
         },
         metadata: {
           version: '1.0',
@@ -210,10 +202,10 @@ export class ImageSegmentationOCRProvider extends ModelProvider {
         provider: this.name,
         capabilities: this.getCapabilities(),
         parameters: {
-          input_size: 256,
-          num_classes: 1, // Binary segmentation
-          backbone: 'resnet34',
-          decoder_channels: [256, 128, 64, 32, 16]
+          'input_size': 256,
+          'num_classes': 1, // Binary segmentation
+          'backbone': 'resnet34',
+          'decoder_channels': [256, 128, 64, 32, 16]
         },
         metadata: {
           version: '1.0',
@@ -236,10 +228,10 @@ export class ImageSegmentationOCRProvider extends ModelProvider {
         provider: this.name,
         capabilities: this.getCapabilities(),
         parameters: {
-          engine_mode: 1, // LSTM neural net mode
-          page_segmentation_mode: 6, // Single uniform block
-          languages: ['eng'],
-          confidence_threshold: 0.6
+          'engine_mode': 1, // LSTM neural net mode
+          'page_segmentation_mode': 6, // Single uniform block
+          'languages': ['eng'],
+          'confidence_threshold': 0.6
         },
         metadata: {
           version: '5.0',
@@ -260,10 +252,10 @@ export class ImageSegmentationOCRProvider extends ModelProvider {
         provider: this.name,
         capabilities: this.getCapabilities(),
         parameters: {
-          det_model: 'ch_PP-OCRv3_det',
-          rec_model: 'ch_PP-OCRv3_rec',
-          cls_model: 'ch_ppocr_mobile_v2.0_cls',
-          languages: ['ch', 'en']
+          'det_model': 'ch_PP-OCRv3_det',
+          'rec_model': 'ch_PP-OCRv3_rec',
+          'cls_model': 'ch_ppocr_mobile_v2.0_cls',
+          'languages': ['ch', 'en']
         },
         metadata: {
           version: '3.0',
@@ -284,10 +276,10 @@ export class ImageSegmentationOCRProvider extends ModelProvider {
         provider: this.name,
         capabilities: this.getCapabilities(),
         parameters: {
-          languages: ['en'],
-          gpu: false,
-          width_ths: 0.7,
-          height_ths: 0.7
+          'languages': ['en'],
+          'gpu': false,
+          'width_ths': 0.7,
+          'height_ths': 0.7
         },
         metadata: {
           version: '1.6',
@@ -310,10 +302,10 @@ export class ImageSegmentationOCRProvider extends ModelProvider {
         provider: this.name,
         capabilities: this.getCapabilities(),
         parameters: {
-          input_size: 1280,
-          text_threshold: 0.7,
-          link_threshold: 0.4,
-          low_text: 0.4
+          'input_size': 1280,
+          'text_threshold': 0.7,
+          'link_threshold': 0.4,
+          'low_text': 0.4
         },
         metadata: {
           version: '1.0',
@@ -336,11 +328,11 @@ export class ImageSegmentationOCRProvider extends ModelProvider {
         provider: this.name,
         capabilities: this.getCapabilities(),
         parameters: {
-          max_position_embeddings: 512,
-          coordinate_size: 128,
-          shape_size: 128,
-          num_attention_heads: 12,
-          num_hidden_layers: 12
+          'max_position_embeddings': 512,
+          'coordinate_size': 128,
+          'shape_size': 128,
+          'num_attention_heads': 12,
+          'num_hidden_layers': 12
         },
         metadata: {
           version: '3.0',
@@ -376,7 +368,7 @@ export class ImageSegmentationOCRProvider extends ModelProvider {
     }
   }
 
-  async initialize(): Promise<void> {
+  override async initialize(): Promise<void> {
     try {
       // Initialize backend
       await this.initializeBackend();
@@ -490,8 +482,8 @@ export class ImageSegmentationOCRProvider extends ModelProvider {
     const mockModel = {
       id: modelId,
       info: modelInfo,
-      inputSize: modelInfo.parameters.input_size || 512,
-      numClasses: modelInfo.parameters.num_classes || 21,
+      inputSize: modelInfo.parameters['input_size'] || 512,
+      numClasses: modelInfo.parameters['num_classes'] || 21,
       predict: (input: any) => this.mockSegmentationInference(input, modelInfo)
     };
 
@@ -509,13 +501,13 @@ export class ImageSegmentationOCRProvider extends ModelProvider {
     return {
       id: modelId,
       info: modelInfo,
-      languages: modelInfo.parameters.languages || ['eng'],
-      confidenceThreshold: modelInfo.parameters.confidence_threshold || 0.6,
+      languages: modelInfo.parameters['languages'] || ['eng'],
+      confidenceThreshold: modelInfo.parameters['confidence_threshold'] || 0.6,
       recognize: (input: any) => this.mockOCRInference(input, modelInfo)
     };
   }
 
-  private async preprocessImageForSegmentation(input: any, model: any): Promise<any> {
+  private async preprocessImageForSegmentation(_input: any, model: any): Promise<any> {
     const inputSize = model.inputSize;
     
     return {
@@ -526,7 +518,7 @@ export class ImageSegmentationOCRProvider extends ModelProvider {
     };
   }
 
-  private async preprocessImageForOCR(input: any, ocrEngine: any): Promise<any> {
+  private async preprocessImageForOCR(input: any, _ocrEngine: any): Promise<any> {
     return {
       image: input,
       preprocessed: true,
@@ -544,9 +536,9 @@ export class ImageSegmentationOCRProvider extends ModelProvider {
     return ocrEngine.recognize(preprocessedInput);
   }
 
-  private mockSegmentationInference(input: any, modelInfo: ModelInfo): any {
-    const numClasses = modelInfo.parameters.num_classes || 21;
-    const inputSize = modelInfo.parameters.input_size || 512;
+  private mockSegmentationInference(_input: any, modelInfo: ModelInfo): any {
+    const numClasses = modelInfo.parameters['num_classes'] || 21;
+    const inputSize = modelInfo.parameters['input_size'] || 512;
     
     // Generate mock segmentation mask
     const mask = Array.from({ length: inputSize * inputSize }, () => 
@@ -564,7 +556,7 @@ export class ImageSegmentationOCRProvider extends ModelProvider {
     };
   }
 
-  private mockOCRInference(input: any, modelInfo: ModelInfo): any {
+  private mockOCRInference(_input: any, modelInfo: ModelInfo): any {
     // Generate mock OCR results
     const mockTexts = [
       'Hello World', 'Computer Vision', 'OCR Technology', 
@@ -583,7 +575,7 @@ export class ImageSegmentationOCRProvider extends ModelProvider {
           x2: Math.random() * 800 + 100,
           y2: Math.random() * 600 + 50
         },
-        language: modelInfo.parameters.languages?.[0] || 'eng'
+        language: modelInfo.parameters['languages']?.[0] || 'eng'
       })),
       full_text: mockTexts.slice(0, numDetections).join(' '),
       confidence: Math.random() * 0.3 + 0.7
@@ -591,7 +583,7 @@ export class ImageSegmentationOCRProvider extends ModelProvider {
   }
 
   private async postprocessSegmentation(segmentationOutput: any, model: any, request: ModelRequest): Promise<any> {
-    const threshold = request.parameters?.segmentation_threshold || this.config.segmentationThreshold;
+    const threshold = request.parameters?.['segmentation_threshold'] || this.config['segmentationThreshold'];
     
     // Apply threshold to confidence map
     const thresholdedMask = segmentationOutput.segmentation_mask.map((classId: number, index: number) => {
@@ -611,7 +603,7 @@ export class ImageSegmentationOCRProvider extends ModelProvider {
   }
 
   private async postprocessOCR(ocrOutput: any, ocrEngine: any, request: ModelRequest): Promise<any> {
-    const confidenceThreshold = request.parameters?.ocr_confidence_threshold || this.config.ocrConfidenceThreshold;
+    const confidenceThreshold = request.parameters?.['ocr_confidence_threshold'] || this.config['ocrConfidenceThreshold'];
     
     // Filter detections by confidence
     const filteredDetections = ocrOutput.text_detections.filter((det: any) => 
@@ -631,7 +623,7 @@ export class ImageSegmentationOCRProvider extends ModelProvider {
       full_text: sortedDetections.map((det: any) => det.text).join(' '),
       word_count: sortedDetections.length,
       average_confidence: sortedDetections.reduce((sum: number, det: any) => sum + det.confidence, 0) / sortedDetections.length || 0,
-      languages_detected: [...new Set(sortedDetections.map((det: any) => det.language))]
+      languages_detected: Array.from(new Set(sortedDetections.map((det: any) => det.language)))
     };
   }
 
@@ -690,7 +682,7 @@ export class ImageSegmentationOCRProvider extends ModelProvider {
       metadata: {
         provider: this.name,
         task_type: 'segmentation',
-        backend: this.config.backend,
+        backend: this.config['backend'],
         classes_detected: results.detected_classes.length
       }
     };
@@ -711,7 +703,7 @@ export class ImageSegmentationOCRProvider extends ModelProvider {
           task_type: 'ocr',
           languages: ocrEngine.languages,
           confidence_threshold: ocrEngine.confidenceThreshold,
-          engine: this.config.ocrEngine
+          engine: this.config['ocrEngine']
         }
       },
       model: request.model,
@@ -724,7 +716,7 @@ export class ImageSegmentationOCRProvider extends ModelProvider {
       metadata: {
         provider: this.name,
         task_type: 'ocr',
-        ocr_engine: this.config.ocrEngine,
+        ocr_engine: this.config['ocrEngine'],
         words_detected: results.word_count,
         languages: results.languages_detected
       }
@@ -748,8 +740,8 @@ export class ImageSegmentationOCRProvider extends ModelProvider {
     warnings: any[]
   ): void {
     // Validate segmentation threshold
-    if (parameters.segmentation_threshold !== undefined) {
-      if (parameters.segmentation_threshold < 0 || parameters.segmentation_threshold > 1) {
+    if (parameters['segmentation_threshold'] !== undefined) {
+      if (parameters['segmentation_threshold'] < 0 || parameters['segmentation_threshold'] > 1) {
         errors.push({
           field: 'parameters.segmentation_threshold',
           message: 'Segmentation threshold must be between 0 and 1',
@@ -759,8 +751,8 @@ export class ImageSegmentationOCRProvider extends ModelProvider {
     }
 
     // Validate OCR confidence threshold
-    if (parameters.ocr_confidence_threshold !== undefined) {
-      if (parameters.ocr_confidence_threshold < 0 || parameters.ocr_confidence_threshold > 1) {
+    if (parameters['ocr_confidence_threshold'] !== undefined) {
+      if (parameters['ocr_confidence_threshold'] < 0 || parameters['ocr_confidence_threshold'] > 1) {
         errors.push({
           field: 'parameters.ocr_confidence_threshold',
           message: 'OCR confidence threshold must be between 0 and 1',
@@ -770,8 +762,8 @@ export class ImageSegmentationOCRProvider extends ModelProvider {
     }
 
     // Validate languages
-    if (parameters.languages !== undefined) {
-      if (!Array.isArray(parameters.languages)) {
+    if (parameters['languages'] !== undefined) {
+      if (!Array.isArray(parameters['languages'])) {
         errors.push({
           field: 'parameters.languages',
           message: 'Languages must be an array',
@@ -801,22 +793,22 @@ export class ImageSegmentationOCRProvider extends ModelProvider {
 
   private async initializeBackend(): Promise<void> {
     // Mock backend initialization
-    console.log(`${this.config.backend} backend initialized for segmentation`);
+    console.log(`${this.config['backend']} backend initialized for segmentation`);
   }
 
   private async initializeOCREngine(): Promise<void> {
     // Mock OCR engine initialization
     this.ocrEngine = {
-      engine: this.config.ocrEngine,
+      engine: this.config['ocrEngine'],
       initialized: true,
-      languages: this.config.languages
+      languages: this.config['languages']
     };
-    console.log(`${this.config.ocrEngine} OCR engine initialized`);
+    console.log(`${this.config['ocrEngine']} OCR engine initialized`);
   }
 
-  async cleanup(): Promise<void> {
+  override async cleanup(): Promise<void> {
     // Dispose of all loaded models
-    for (const [modelId, model] of this.loadedModels) {
+    Array.from(this.loadedModels.entries()).forEach(([modelId, model]) => {
       try {
         if (model && model.dispose) {
           model.dispose();
@@ -824,7 +816,7 @@ export class ImageSegmentationOCRProvider extends ModelProvider {
       } catch (error) {
         console.warn(`Failed to dispose segmentation model ${modelId}:`, error);
       }
-    }
+    });
     this.loadedModels.clear();
 
     // Cleanup OCR engine

@@ -19,12 +19,12 @@ export class YOLOProvider extends ModelProvider {
 
   constructor(config: Record<string, any> = {}) {
     super('yolo', 'object-detection', {
-      backend: config.backend || 'onnx', // 'onnx', 'tensorflowjs', 'opencv'
-      enableGPU: config.enableGPU || false,
-      confidenceThreshold: config.confidenceThreshold || 0.5,
-      nmsThreshold: config.nmsThreshold || 0.4,
-      maxDetections: config.maxDetections || 100,
-      inputSize: config.inputSize || 640,
+      backend: config['backend'] || 'onnx', // 'onnx', 'tensorflowjs', 'opencv'
+      enableGPU: config['enableGPU'] || false,
+      confidenceThreshold: config['confidenceThreshold'] || 0.5,
+      nmsThreshold: config['nmsThreshold'] || 0.4,
+      maxDetections: config['maxDetections'] || 100,
+      inputSize: config['inputSize'] || 640,
       ...config
     });
   }
@@ -78,11 +78,7 @@ export class YOLOProvider extends ModelProvider {
     return {
       supportedTypes: ['CNN', 'Vision'],
       capabilities: [
-        'object-detection',
-        'real-time-detection',
-        'multi-class-detection',
-        'bounding-box-regression',
-        'confidence-scoring'
+        'text-generation'
       ],
       maxInputSize: 1920 * 1080 * 3, // Full HD RGB
       maxOutputSize: 25200 * 85, // Max detections * (bbox + conf + classes)
@@ -95,8 +91,8 @@ export class YOLOProvider extends ModelProvider {
   }
 
   validateConfig(config: ModelConfig): ValidationResult {
-    const errors = [];
-    const warnings = [];
+    const errors: any[] = [];
+    const warnings: any[] = [];
 
     // Validate model name
     if (!config.model) {
@@ -129,10 +125,10 @@ export class YOLOProvider extends ModelProvider {
         provider: this.name,
         capabilities: this.getCapabilities(),
         parameters: {
-          input_size: 640,
-          num_classes: 80,
-          confidence_threshold: 0.25,
-          nms_threshold: 0.45
+          'input_size': 640,
+          'num_classes': 80,
+          'confidence_threshold': 0.25,
+          'nms_threshold': 0.45
         },
         metadata: {
           version: '7.0',
@@ -153,10 +149,10 @@ export class YOLOProvider extends ModelProvider {
         provider: this.name,
         capabilities: this.getCapabilities(),
         parameters: {
-          input_size: 640,
-          num_classes: 80,
-          confidence_threshold: 0.25,
-          nms_threshold: 0.45
+          'input_size': 640,
+          'num_classes': 80,
+          'confidence_threshold': 0.25,
+          'nms_threshold': 0.45
         },
         metadata: {
           version: '7.0',
@@ -177,10 +173,10 @@ export class YOLOProvider extends ModelProvider {
         provider: this.name,
         capabilities: this.getCapabilities(),
         parameters: {
-          input_size: 640,
-          num_classes: 80,
-          confidence_threshold: 0.25,
-          nms_threshold: 0.45
+          'input_size': 640,
+          'num_classes': 80,
+          'confidence_threshold': 0.25,
+          'nms_threshold': 0.45
         },
         metadata: {
           version: '7.0',
@@ -201,10 +197,10 @@ export class YOLOProvider extends ModelProvider {
         provider: this.name,
         capabilities: this.getCapabilities(),
         parameters: {
-          input_size: 640,
-          num_classes: 80,
-          confidence_threshold: 0.25,
-          nms_threshold: 0.45
+          'input_size': 640,
+          'num_classes': 80,
+          'confidence_threshold': 0.25,
+          'nms_threshold': 0.45
         },
         metadata: {
           version: '7.0',
@@ -227,10 +223,10 @@ export class YOLOProvider extends ModelProvider {
         provider: this.name,
         capabilities: this.getCapabilities(),
         parameters: {
-          input_size: 640,
-          num_classes: 80,
-          confidence_threshold: 0.25,
-          nms_threshold: 0.7
+          'input_size': 640,
+          'num_classes': 80,
+          'confidence_threshold': 0.25,
+          'nms_threshold': 0.7
         },
         metadata: {
           version: '8.0',
@@ -251,10 +247,10 @@ export class YOLOProvider extends ModelProvider {
         provider: this.name,
         capabilities: this.getCapabilities(),
         parameters: {
-          input_size: 640,
-          num_classes: 80,
-          confidence_threshold: 0.25,
-          nms_threshold: 0.7
+          'input_size': 640,
+          'num_classes': 80,
+          'confidence_threshold': 0.25,
+          'nms_threshold': 0.7
         },
         metadata: {
           version: '8.0',
@@ -277,10 +273,10 @@ export class YOLOProvider extends ModelProvider {
         provider: this.name,
         capabilities: this.getCapabilities(),
         parameters: {
-          input_size: 640,
-          num_classes: 1,
-          confidence_threshold: 0.4,
-          nms_threshold: 0.5
+          'input_size': 640,
+          'num_classes': 1,
+          'confidence_threshold': 0.4,
+          'nms_threshold': 0.5
         },
         metadata: {
           version: '7.0',
@@ -300,10 +296,10 @@ export class YOLOProvider extends ModelProvider {
         provider: this.name,
         capabilities: this.getCapabilities(),
         parameters: {
-          input_size: 640,
-          num_keypoints: 17,
-          confidence_threshold: 0.25,
-          nms_threshold: 0.7
+          'input_size': 640,
+          'num_keypoints': 17,
+          'confidence_threshold': 0.25,
+          'nms_threshold': 0.7
         },
         metadata: {
           version: '8.0',
@@ -329,9 +325,9 @@ export class YOLOProvider extends ModelProvider {
   async isAvailable(): Promise<boolean> {
     try {
       // Check if ONNX Runtime or TensorFlow.js is available
-      if (this.config.backend === 'onnx') {
+      if (this.config['backend'] === 'onnx') {
         return await this.checkONNXAvailability();
-      } else if (this.config.backend === 'tensorflowjs') {
+      } else if (this.config['backend'] === 'tensorflowjs') {
         return await this.checkTensorFlowJSAvailability();
       }
       return true; // Mock availability
@@ -340,12 +336,12 @@ export class YOLOProvider extends ModelProvider {
     }
   }
 
-  async initialize(): Promise<void> {
+  override async initialize(): Promise<void> {
     try {
       // Initialize the appropriate backend
-      if (this.config.backend === 'onnx') {
+      if (this.config['backend'] === 'onnx') {
         await this.initializeONNX();
-      } else if (this.config.backend === 'tensorflowjs') {
+      } else if (this.config['backend'] === 'tensorflowjs') {
         await this.initializeTensorFlowJS();
       }
 
@@ -411,10 +407,10 @@ export class YOLOProvider extends ModelProvider {
     const mockModel = {
       id: modelId,
       info: modelInfo,
-      inputSize: modelInfo.parameters.input_size || 640,
-      numClasses: modelInfo.parameters.num_classes || 80,
-      confidenceThreshold: modelInfo.parameters.confidence_threshold || 0.25,
-      nmsThreshold: modelInfo.parameters.nms_threshold || 0.45,
+      inputSize: modelInfo.parameters['input_size'] || 640,
+      numClasses: modelInfo.parameters['num_classes'] || 80,
+      confidenceThreshold: modelInfo.parameters['confidence_threshold'] || 0.25,
+      nmsThreshold: modelInfo.parameters['nms_threshold'] || 0.45,
       predict: (input: any) => this.mockInference(input, modelInfo)
     };
 
@@ -422,7 +418,7 @@ export class YOLOProvider extends ModelProvider {
     return mockModel;
   }
 
-  private async preprocessImage(input: any, model: any): Promise<any> {
+  private async preprocessImage(_input: any, model: any): Promise<any> {
     // Mock image preprocessing
     const inputSize = model.inputSize;
     
@@ -439,9 +435,9 @@ export class YOLOProvider extends ModelProvider {
     return model.predict(preprocessedInput);
   }
 
-  private mockInference(input: any, modelInfo: ModelInfo): any {
+  private mockInference(_input: any, modelInfo: ModelInfo): any {
     const numDetections = Math.floor(Math.random() * 10) + 1;
-    const numClasses = modelInfo.parameters.num_classes || 80;
+    const numClasses = modelInfo.parameters['num_classes'] || 80;
     
     return {
       boxes: Array.from({ length: numDetections }, () => [
@@ -457,9 +453,9 @@ export class YOLOProvider extends ModelProvider {
   }
 
   private async postprocessDetections(rawOutput: any, model: any, request: ModelRequest): Promise<any> {
-    const confidenceThreshold = request.parameters?.confidence_threshold || model.confidenceThreshold;
-    const nmsThreshold = request.parameters?.nms_threshold || model.nmsThreshold;
-    const maxDetections = request.parameters?.max_detections || this.config.maxDetections;
+    const confidenceThreshold = request.parameters?.['confidence_threshold'] || model.confidenceThreshold;
+    const nmsThreshold = request.parameters?.['nms_threshold'] || model.nmsThreshold;
+    const maxDetections = request.parameters?.['max_detections'] || this.config['maxDetections'];
 
     // Filter by confidence
     const validDetections = [];
@@ -481,11 +477,11 @@ export class YOLOProvider extends ModelProvider {
     return nmsDetections.slice(0, maxDetections);
   }
 
-  private applyNMS(detections: any[], nmsThreshold: number): any[] {
+  private applyNMS(detections: any[], _nmsThreshold: number): any[] {
     // Simplified NMS implementation (mock)
     return detections
       .sort((a, b) => b.confidence - a.confidence)
-      .filter((detection, index) => {
+      .filter((_detection, index) => {
         // Simple overlap check (mock implementation)
         return index < 20; // Limit to top 20 detections
       });
@@ -524,7 +520,7 @@ export class YOLOProvider extends ModelProvider {
         })),
         summary: {
           total_detections: detections.length,
-          classes_detected: [...new Set(detections.map(d => d.class_name))],
+          classes_detected: Array.from(new Set(detections.map(d => d.class_name))),
           average_confidence: detections.reduce((sum, d) => sum + d.confidence, 0) / detections.length || 0,
           model_info: {
             model_id: model.id,
@@ -544,7 +540,7 @@ export class YOLOProvider extends ModelProvider {
       finishReason: 'completed',
       metadata: {
         provider: this.name,
-        backend: this.config.backend,
+        backend: this.config['backend'],
         model_version: model.info.metadata.version,
         detection_count: detections.length
       }
@@ -644,9 +640,9 @@ export class YOLOProvider extends ModelProvider {
     console.log('TensorFlow.js backend initialized for YOLO');
   }
 
-  async cleanup(): Promise<void> {
+  override async cleanup(): Promise<void> {
     // Dispose of all loaded models
-    for (const [modelId, model] of this.loadedModels) {
+    Array.from(this.loadedModels.entries()).forEach(([modelId, model]) => {
       try {
         if (model && model.dispose) {
           model.dispose();
@@ -654,7 +650,7 @@ export class YOLOProvider extends ModelProvider {
       } catch (error) {
         console.warn(`Failed to dispose YOLO model ${modelId}:`, error);
       }
-    }
+    });
     this.loadedModels.clear();
   }
 }

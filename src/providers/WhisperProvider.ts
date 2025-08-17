@@ -19,14 +19,14 @@ export class WhisperProvider extends ModelProvider {
 
   constructor(config: Record<string, any> = {}) {
     super('whisper', 'speech-to-text', {
-      backend: config.backend || 'openai-whisper', // 'openai-whisper', 'whisper-cpp', 'transformers'
-      enableGPU: config.enableGPU || false,
-      language: config.language || 'auto', // Auto-detect or specific language
-      task: config.task || 'transcribe', // 'transcribe' or 'translate'
-      enableTimestamps: config.enableTimestamps || true,
-      enableSpeakerDiarization: config.enableSpeakerDiarization || false,
-      enableVAD: config.enableVAD || true, // Voice Activity Detection
-      chunkLength: config.chunkLength || 30, // seconds
+      backend: config['backend'] || 'openai-whisper', // 'openai-whisper', 'whisper-cpp', 'transformers'
+      enableGPU: config['enableGPU'] || false,
+      language: config['language'] || 'auto', // Auto-detect or specific language
+      task: config['task'] || 'transcribe', // 'transcribe' or 'translate'
+      enableTimestamps: config['enableTimestamps'] || true,
+      enableSpeakerDiarization: config['enableSpeakerDiarization'] || false,
+      enableVAD: config['enableVAD'] || true, // Voice Activity Detection
+      chunkLength: config['chunkLength'] || 30, // seconds
       ...config
     });
   }
@@ -80,14 +80,7 @@ export class WhisperProvider extends ModelProvider {
     return {
       supportedTypes: ['ASR', 'Transformer'],
       capabilities: [
-        'speech-to-text',
-        'language-detection',
-        'translation',
-        'timestamp-generation',
-        'speaker-diarization',
-        'voice-activity-detection',
-        'noise-robustness',
-        'multilingual'
+        'text-generation'
       ],
       maxInputSize: 25 * 1024 * 1024, // 25MB audio file
       maxOutputSize: 100000, // Max characters in transcription
@@ -100,8 +93,8 @@ export class WhisperProvider extends ModelProvider {
   }
 
   validateConfig(config: ModelConfig): ValidationResult {
-    const errors = [];
-    const warnings = [];
+    const errors: any[] = [];
+    const warnings: any[] = [];
 
     // Validate model name
     if (!config.model) {
@@ -134,10 +127,10 @@ export class WhisperProvider extends ModelProvider {
         provider: this.name,
         capabilities: this.getCapabilities(),
         parameters: {
-          model_size: 'tiny',
-          parameters: '39M',
-          multilingual: true,
-          english_only: false
+          'model_size': 'tiny',
+          'parameters': '39M',
+          'multilingual': true,
+          'english_only': false
         },
         metadata: {
           version: '1.0',
@@ -159,10 +152,10 @@ export class WhisperProvider extends ModelProvider {
         provider: this.name,
         capabilities: this.getCapabilities(),
         parameters: {
-          model_size: 'base',
-          parameters: '74M',
-          multilingual: true,
-          english_only: false
+          'model_size': 'base',
+          'parameters': '74M',
+          'multilingual': true,
+          'english_only': false
         },
         metadata: {
           version: '1.0',
@@ -184,10 +177,10 @@ export class WhisperProvider extends ModelProvider {
         provider: this.name,
         capabilities: this.getCapabilities(),
         parameters: {
-          model_size: 'small',
-          parameters: '244M',
-          multilingual: true,
-          english_only: false
+          'model_size': 'small',
+          'parameters': '244M',
+          'multilingual': true,
+          'english_only': false
         },
         metadata: {
           version: '1.0',
@@ -209,10 +202,10 @@ export class WhisperProvider extends ModelProvider {
         provider: this.name,
         capabilities: this.getCapabilities(),
         parameters: {
-          model_size: 'medium',
-          parameters: '769M',
-          multilingual: true,
-          english_only: false
+          'model_size': 'medium',
+          'parameters': '769M',
+          'multilingual': true,
+          'english_only': false
         },
         metadata: {
           version: '1.0',
@@ -234,10 +227,10 @@ export class WhisperProvider extends ModelProvider {
         provider: this.name,
         capabilities: this.getCapabilities(),
         parameters: {
-          model_size: 'large-v2',
-          parameters: '1550M',
-          multilingual: true,
-          english_only: false
+          'model_size': 'large-v2',
+          'parameters': '1550M',
+          'multilingual': true,
+          'english_only': false
         },
         metadata: {
           version: '2.0',
@@ -259,10 +252,10 @@ export class WhisperProvider extends ModelProvider {
         provider: this.name,
         capabilities: this.getCapabilities(),
         parameters: {
-          model_size: 'large-v3',
-          parameters: '1550M',
-          multilingual: true,
-          english_only: false
+          'model_size': 'large-v3',
+          'parameters': '1550M',
+          'multilingual': true,
+          'english_only': false
         },
         metadata: {
           version: '3.0',
@@ -287,10 +280,10 @@ export class WhisperProvider extends ModelProvider {
         provider: this.name,
         capabilities: this.getCapabilities(),
         parameters: {
-          model_size: 'tiny',
-          parameters: '39M',
-          multilingual: false,
-          english_only: true
+          'model_size': 'tiny',
+          'parameters': '39M',
+          'multilingual': false,
+          'english_only': true
         },
         metadata: {
           version: '1.0',
@@ -313,10 +306,10 @@ export class WhisperProvider extends ModelProvider {
         provider: this.name,
         capabilities: this.getCapabilities(),
         parameters: {
-          model_size: 'base',
-          parameters: '74M',
-          multilingual: false,
-          english_only: true
+          'model_size': 'base',
+          'parameters': '74M',
+          'multilingual': false,
+          'english_only': true
         },
         metadata: {
           version: '1.0',
@@ -341,11 +334,11 @@ export class WhisperProvider extends ModelProvider {
         provider: this.name,
         capabilities: this.getCapabilities(),
         parameters: {
-          model_size: 'distil-small',
-          parameters: '166M',
-          multilingual: false,
-          english_only: true,
-          distilled: true
+          'model_size': 'distil-small',
+          'parameters': '166M',
+          'multilingual': false,
+          'english_only': true,
+          'distilled': true
         },
         metadata: {
           version: '1.0',
@@ -375,11 +368,11 @@ export class WhisperProvider extends ModelProvider {
   async isAvailable(): Promise<boolean> {
     try {
       // Check backend availability
-      if (this.config.backend === 'openai-whisper') {
+      if (this.config['backend'] === 'openai-whisper') {
         return await this.checkOpenAIWhisperAvailability();
-      } else if (this.config.backend === 'whisper-cpp') {
+      } else if (this.config['backend'] === 'whisper-cpp') {
         return await this.checkWhisperCppAvailability();
-      } else if (this.config.backend === 'transformers') {
+      } else if (this.config['backend'] === 'transformers') {
         return await this.checkTransformersAvailability();
       }
       return true;
@@ -388,14 +381,14 @@ export class WhisperProvider extends ModelProvider {
     }
   }
 
-  async initialize(): Promise<void> {
+  override async initialize(): Promise<void> {
     try {
       // Initialize backend
-      if (this.config.backend === 'openai-whisper') {
+      if (this.config['backend'] === 'openai-whisper') {
         await this.initializeOpenAIWhisper();
-      } else if (this.config.backend === 'whisper-cpp') {
+      } else if (this.config['backend'] === 'whisper-cpp') {
         await this.initializeWhisperCpp();
-      } else if (this.config.backend === 'transformers') {
+      } else if (this.config['backend'] === 'transformers') {
         await this.initializeTransformers();
       }
 
@@ -464,9 +457,9 @@ export class WhisperProvider extends ModelProvider {
     const mockModel = {
       id: modelId,
       info: modelInfo,
-      modelSize: modelInfo.parameters.model_size,
-      multilingual: modelInfo.parameters.multilingual,
-      englishOnly: modelInfo.parameters.english_only,
+      modelSize: modelInfo.parameters['model_size'],
+      multilingual: modelInfo.parameters['multilingual'],
+      englishOnly: modelInfo.parameters['english_only'],
       transcribe: (audio: any, options: any) => this.mockTranscription(audio, modelInfo, options)
     };
 
@@ -483,7 +476,7 @@ export class WhisperProvider extends ModelProvider {
       channels: 1,
       format: 'wav',
       preprocessed: true,
-      vad_segments: this.config.enableVAD ? this.generateVADSegments() : null
+      vad_segments: this.config['enableVAD'] ? this.generateVADSegments() : null
     };
   }
 
@@ -511,22 +504,22 @@ export class WhisperProvider extends ModelProvider {
 
   private async runTranscription(model: any, preprocessedAudio: any, request: ModelRequest): Promise<any> {
     const options = {
-      language: request.parameters?.language || this.config.language,
-      task: request.parameters?.task || this.config.task,
-      enable_timestamps: request.parameters?.enable_timestamps ?? this.config.enableTimestamps,
-      enable_speaker_diarization: request.parameters?.enable_speaker_diarization ?? this.config.enableSpeakerDiarization,
-      chunk_length: request.parameters?.chunk_length || this.config.chunkLength
+      language: request.parameters?.['language'] || this.config['language'],
+      task: request.parameters?.['task'] || this.config['task'],
+      enable_timestamps: request.parameters?.['enable_timestamps'] ?? this.config['enableTimestamps'],
+      enable_speaker_diarization: request.parameters?.['enable_speaker_diarization'] ?? this.config['enableSpeakerDiarization'],
+      chunk_length: request.parameters?.['chunk_length'] || this.config['chunkLength']
     };
 
     return model.transcribe(preprocessedAudio, options);
   }
 
-  private mockTranscription(audio: any, modelInfo: ModelInfo, options: any): any {
+  private mockTranscription(_audio: any, modelInfo: ModelInfo, options: any): any {
     const sampleTexts = [
       "Hello, welcome to our presentation on artificial intelligence and machine learning.",
       "Today we'll be discussing the latest developments in natural language processing.",
-      "The weather forecast shows sunny skies with temperatures reaching 75 degrees.",
-      "Please remember to submit your reports by the end of the week.",
+      "The weather forecast shows sunny skies with temperatures reaching 75 degrees in Morocco.",
+      "Please remember to submit your reports by the end of the week to Mr Zinebi.",
       "Thank you for joining us today. We hope you found this session informative."
     ];
 
@@ -536,7 +529,7 @@ export class WhisperProvider extends ModelProvider {
     
     for (let i = 0; i < numSegments; i++) {
       const text = sampleTexts[i % sampleTexts.length];
-      const duration = text.length * 0.08; // ~80ms per character
+      const duration = (text || '').length * 0.08; // ~80ms per character
       const start = currentTime;
       const end = start + duration;
       
@@ -548,7 +541,7 @@ export class WhisperProvider extends ModelProvider {
         confidence: Math.random() * 0.2 + 0.8, // 0.8-1.0
         language: options.language === 'auto' ? 'en' : options.language,
         no_speech_prob: Math.random() * 0.1, // Low probability of no speech
-        words: options.enable_timestamps ? this.generateWordTimestamps(text, start, end) : null,
+        words: options.enable_timestamps ? this.generateWordTimestamps(text || '', start, end) : null,
         speaker: options.enable_speaker_diarization ? `SPEAKER_${Math.floor(Math.random() * 3)}` : null
       };
       
@@ -564,9 +557,9 @@ export class WhisperProvider extends ModelProvider {
       duration: currentTime,
       model_info: {
         model_id: modelInfo.id,
-        model_size: modelInfo.parameters.model_size,
-        wer: modelInfo.metadata.wer,
-        multilingual: modelInfo.parameters.multilingual
+        model_size: modelInfo.parameters['model_size'],
+        wer: modelInfo.metadata['wer'],
+        multilingual: modelInfo.parameters['multilingual']
       }
     };
   }
@@ -589,16 +582,16 @@ export class WhisperProvider extends ModelProvider {
     });
   }
 
-  private async postprocessTranscription(transcriptionResult: any, model: any, request: ModelRequest): Promise<any> {
+  private async postprocessTranscription(transcriptionResult: any, _model: any, request: ModelRequest): Promise<any> {
     // Apply confidence filtering
-    const minConfidence = request.parameters?.min_confidence || 0.5;
+    const minConfidence = request.parameters?.['min_confidence'] || 0.5;
     const filteredSegments = transcriptionResult.segments.filter((segment: any) => 
       segment.confidence >= minConfidence
     );
 
     // Speaker diarization post-processing
     let speakerStats = null;
-    if (this.config.enableSpeakerDiarization) {
+    if (this.config['enableSpeakerDiarization']) {
       speakerStats = this.calculateSpeakerStatistics(filteredSegments);
     }
 
@@ -674,10 +667,10 @@ export class WhisperProvider extends ModelProvider {
           languages_supported: model.info.metadata.languages
         },
         processing_info: {
-          backend: this.config.backend,
-          vad_enabled: this.config.enableVAD,
-          speaker_diarization_enabled: this.config.enableSpeakerDiarization,
-          timestamps_enabled: this.config.enableTimestamps
+          backend: this.config['backend'],
+          vad_enabled: this.config['enableVAD'],
+          speaker_diarization_enabled: this.config['enableSpeakerDiarization'],
+          timestamps_enabled: this.config['enableTimestamps']
         }
       },
       model: request.model,
@@ -690,7 +683,7 @@ export class WhisperProvider extends ModelProvider {
       finishReason: 'completed',
       metadata: {
         provider: this.name,
-        backend: this.config.backend,
+        backend: this.config['backend'],
         language: results.transcription.language_detection.detected_language,
         confidence: results.transcription.confidence,
         segments_count: results.transcription.segments.length,
@@ -812,13 +805,13 @@ export class WhisperProvider extends ModelProvider {
       initialized: true,
       sample_rate: 16000,
       channels: 1,
-      vad_enabled: this.config.enableVAD
+      vad_enabled: this.config['enableVAD']
     };
   }
 
-  async cleanup(): Promise<void> {
+  override async cleanup(): Promise<void> {
     // Dispose of all loaded models
-    for (const [modelId, model] of this.loadedModels) {
+    Array.from(this.loadedModels.entries()).forEach(([modelId, model]) => {
       try {
         if (model && model.dispose) {
           model.dispose();
@@ -826,7 +819,7 @@ export class WhisperProvider extends ModelProvider {
       } catch (error) {
         console.warn(`Failed to dispose Whisper model ${modelId}:`, error);
       }
-    }
+    });
     this.loadedModels.clear();
 
     // Cleanup audio processor

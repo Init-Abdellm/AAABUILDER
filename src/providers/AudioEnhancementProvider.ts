@@ -1,9 +1,9 @@
-import { 
-  ModelProvider, 
-  ModelRequest, 
-  ModelResponse, 
-  ModelCapabilities, 
-  ModelInfo, 
+import {
+  ModelProvider,
+  ModelRequest,
+  ModelResponse,
+  ModelCapabilities,
+  ModelInfo,
   ValidationResult,
   ModelConfig
 } from './ModelProvider';
@@ -20,15 +20,15 @@ export class AudioEnhancementProvider extends ModelProvider {
 
   constructor(config: Record<string, any> = {}) {
     super('audio-enhancement', 'audio-processing', {
-      backend: config.backend || 'rnnoise', // 'rnnoise', 'facebook-denoiser', 'nvidia-noisered'
-      enableGPU: config.enableGPU || false,
-      sampleRate: config.sampleRate || 16000,
-      frameSize: config.frameSize || 480, // samples
-      hopSize: config.hopSize || 160, // samples
-      enableRealTime: config.enableRealTime || true,
-      noiseReductionLevel: config.noiseReductionLevel || 0.8,
-      enhancementLevel: config.enhancementLevel || 0.6,
-      preserveSpeech: config.preserveSpeech || true,
+      backend: config['backend'] || 'rnnoise', // 'rnnoise', 'facebook-denoiser', 'nvidia-noisered'
+      enableGPU: config['enableGPU'] || false,
+      sampleRate: config['sampleRate'] || 16000,
+      frameSize: config['frameSize'] || 480, // samples
+      hopSize: config['hopSize'] || 160, // samples
+      enableRealTime: config['enableRealTime'] || true,
+      noiseReductionLevel: config['noiseReductionLevel'] || 0.8,
+      enhancementLevel: config['enhancementLevel'] || 0.6,
+      preserveSpeech: config['preserveSpeech'] || true,
       ...config
     });
   }
@@ -40,7 +40,7 @@ export class AudioEnhancementProvider extends ModelProvider {
 
   async execute(request: ModelRequest): Promise<ModelResponse> {
     const startTime = Date.now();
-    
+
     try {
       // Validate request
       const validation = this.validateRequest(request);
@@ -50,7 +50,7 @@ export class AudioEnhancementProvider extends ModelProvider {
 
       // Determine enhancement type
       const enhancementType = this.inferEnhancementType(request.model);
-      
+
       let results;
       if (enhancementType === 'noise-reduction') {
         results = await this.executeNoiseReduction(request);
@@ -63,9 +63,9 @@ export class AudioEnhancementProvider extends ModelProvider {
       } else {
         throw new Error(`Unsupported enhancement type: ${enhancementType}`);
       }
-      
+
       const duration = Date.now() - startTime;
-      
+
       return {
         ...results,
         usage: {
@@ -83,9 +83,7 @@ export class AudioEnhancementProvider extends ModelProvider {
     return {
       supportedTypes: ['RNN', 'CNN', 'Transformer', 'GAN'],
       capabilities: [
-        'text-generation',
-        'audio-processing',
-        'real-time-processing'
+        'text-generation'
       ],
       maxInputSize: 500 * 1024 * 1024, // 500MB audio file
       maxOutputSize: 500 * 1024 * 1024, // Enhanced audio
@@ -132,10 +130,10 @@ export class AudioEnhancementProvider extends ModelProvider {
         provider: this.name,
         capabilities: this.getCapabilities(),
         parameters: {
-          sample_rate: 48000,
-          frame_size: 480,
-          model_type: 'gru',
-          layers: 3
+          'sample_rate': 48000,
+          'frame_size': 480,
+          'model_type': 'gru',
+          'layers': 3
         },
         metadata: {
           version: '1.0',
@@ -157,10 +155,10 @@ export class AudioEnhancementProvider extends ModelProvider {
         provider: this.name,
         capabilities: this.getCapabilities(),
         parameters: {
-          sample_rate: 16000,
-          n_fft: 512,
-          hop_length: 128,
-          architecture: 'demucs'
+          'sample_rate': 16000,
+          'n_fft': 512,
+          'hop_length': 128,
+          'architecture': 'demucs'
         },
         metadata: {
           version: '1.0',
@@ -181,10 +179,10 @@ export class AudioEnhancementProvider extends ModelProvider {
         provider: this.name,
         capabilities: this.getCapabilities(),
         parameters: {
-          sample_rate: 48000,
-          frame_size: 480,
-          gpu_optimized: true,
-          batch_processing: true
+          'sample_rate': 48000,
+          'frame_size': 480,
+          'gpu_optimized': true,
+          'batch_processing': true
         },
         metadata: {
           version: '2.0',
@@ -208,10 +206,10 @@ export class AudioEnhancementProvider extends ModelProvider {
         provider: this.name,
         capabilities: this.getCapabilities(),
         parameters: {
-          sample_rate: 8000,
-          n_src: 2, // Number of sources
-          num_layers: 2,
-          num_heads: 8
+          'sample_rate': 8000,
+          'n_src': 2, // Number of sources
+          'num_layers': 2,
+          'num_heads': 8
         },
         metadata: {
           version: '1.0',
@@ -232,10 +230,10 @@ export class AudioEnhancementProvider extends ModelProvider {
         provider: this.name,
         capabilities: this.getCapabilities(),
         parameters: {
-          sample_rate: 8000,
-          n_src: 2,
-          n_filters: 512,
-          kernel_size: 16
+          'sample_rate': 8000,
+          'n_src': 2,
+          'n_filters': 512,
+          'kernel_size': 16
         },
         metadata: {
           version: '1.0',
@@ -258,10 +256,10 @@ export class AudioEnhancementProvider extends ModelProvider {
         provider: this.name,
         capabilities: this.getCapabilities(),
         parameters: {
-          upsampling_factor: 4,
-          input_sample_rate: 4000,
-          output_sample_rate: 16000,
-          generator_layers: 8
+          'upsampling_factor': 4,
+          'input_sample_rate': 4000,
+          'output_sample_rate': 16000,
+          'generator_layers': 8
         },
         metadata: {
           version: '1.0',
@@ -282,10 +280,10 @@ export class AudioEnhancementProvider extends ModelProvider {
         provider: this.name,
         capabilities: this.getCapabilities(),
         parameters: {
-          sample_rate: 48000,
-          frame_size: 480,
-          erb_bands: 32,
-          df_order: 5
+          'sample_rate': 48000,
+          'frame_size': 480,
+          'erb_bands': 32,
+          'df_order': 5
         },
         metadata: {
           version: '2.0',
@@ -309,10 +307,10 @@ export class AudioEnhancementProvider extends ModelProvider {
         provider: this.name,
         capabilities: this.getCapabilities(),
         parameters: {
-          sample_rate: 16000,
-          frame_size: 160,
-          filter_length: 512,
-          adaptation_rate: 0.01
+          'sample_rate': 16000,
+          'frame_size': 160,
+          'filter_length': 512,
+          'adaptation_rate': 0.01
         },
         metadata: {
           version: '1.0',
@@ -333,10 +331,10 @@ export class AudioEnhancementProvider extends ModelProvider {
         provider: this.name,
         capabilities: this.getCapabilities(),
         parameters: {
-          sample_rate: 16000,
-          n_fft: 512,
-          hop_length: 256,
-          context_frames: 5
+          'sample_rate': 16000,
+          'n_fft': 512,
+          'hop_length': 256,
+          'context_frames': 5
         },
         metadata: {
           version: '1.0',
@@ -357,10 +355,10 @@ export class AudioEnhancementProvider extends ModelProvider {
         provider: this.name,
         capabilities: this.getCapabilities(),
         parameters: {
-          sample_rate: 44100,
-          frame_size: 1024,
-          attack_time: 0.003,
-          release_time: 0.1
+          'sample_rate': 44100,
+          'frame_size': 1024,
+          'attack_time': 0.003,
+          'release_time': 0.1
         },
         metadata: {
           version: '1.0',
@@ -481,64 +479,64 @@ export class AudioEnhancementProvider extends ModelProvider {
   private async executeNoiseReduction(request: ModelRequest): Promise<ModelResponse> {
     // Load model
     const model = await this.loadModel(request.model);
-    
+
     // Preprocess audio
     const preprocessedAudio = await this.preprocessAudioForNoiseReduction(request.input, model);
-    
+
     // Apply noise reduction
     const enhancedAudio = await this.applyNoiseReduction(model, preprocessedAudio, request);
-    
+
     // Analyze enhancement quality
     const qualityMetrics = await this.analyzeEnhancementQuality(preprocessedAudio, enhancedAudio);
-    
+
     return this.formatEnhancementResponse(enhancedAudio, qualityMetrics, request, model, 'noise-reduction');
   }
 
   private async executeSpeechEnhancement(request: ModelRequest): Promise<ModelResponse> {
     // Load model
     const model = await this.loadModel(request.model);
-    
+
     // Preprocess audio
     const preprocessedAudio = await this.preprocessAudioForSpeechEnhancement(request.input, model);
-    
+
     // Apply speech enhancement
     const enhancedAudio = await this.applySpeechEnhancement(model, preprocessedAudio, request);
-    
+
     // Analyze enhancement quality
     const qualityMetrics = await this.analyzeEnhancementQuality(preprocessedAudio, enhancedAudio);
-    
+
     return this.formatEnhancementResponse(enhancedAudio, qualityMetrics, request, model, 'speech-enhancement');
   }
 
   private async executeAudioRestoration(request: ModelRequest): Promise<ModelResponse> {
     // Load model
     const model = await this.loadModel(request.model);
-    
+
     // Preprocess audio
     const preprocessedAudio = await this.preprocessAudioForRestoration(request.input, model);
-    
+
     // Apply audio restoration
     const restoredAudio = await this.applyAudioRestoration(model, preprocessedAudio, request);
-    
+
     // Analyze restoration quality
     const qualityMetrics = await this.analyzeEnhancementQuality(preprocessedAudio, restoredAudio);
-    
+
     return this.formatEnhancementResponse(restoredAudio, qualityMetrics, request, model, 'audio-restoration');
   }
 
   private async executeRealTimeProcessing(request: ModelRequest): Promise<ModelResponse> {
     // Load model
     const model = await this.loadModel(request.model);
-    
+
     // Setup real-time processing pipeline
     const pipeline = await this.setupRealTimePipeline(model, request);
-    
+
     // Process audio in chunks
     const processedAudio = await this.processAudioRealTime(pipeline, request.input, request);
-    
+
     // Analyze processing performance
     const performanceMetrics = await this.analyzeRealTimePerformance(pipeline);
-    
+
     return this.formatRealTimeResponse(processedAudio, performanceMetrics, request, model);
   }
 
@@ -611,25 +609,25 @@ export class AudioEnhancementProvider extends ModelProvider {
     };
   }
 
-  private generateSpeechSegments(): Array<{start: number, end: number, confidence: number}> {
+  private generateSpeechSegments(): Array<{ start: number, end: number, confidence: number }> {
     const numSegments = Math.floor(Math.random() * 5) + 2;
     const segments = [];
     let currentTime = 0;
-    
+
     for (let i = 0; i < numSegments; i++) {
       const start = currentTime + Math.random() * 1;
       const duration = Math.random() * 4 + 1; // 1-5 seconds
       const end = start + duration;
-      
+
       segments.push({
         start,
         end,
         confidence: Math.random() * 0.2 + 0.8
       });
-      
+
       currentTime = end + Math.random() * 2;
     }
-    
+
     return segments;
   }
 
@@ -745,7 +743,7 @@ export class AudioEnhancementProvider extends ModelProvider {
 
   private mockEnhancement(audio: any, modelInfo: ModelInfo, options: any): any {
     const category = modelInfo.metadata.category;
-    
+
     if (category === 'noise-reduction') {
       return this.mockNoiseReductionResult(audio, modelInfo);
     } else if (category === 'speech-enhancement') {
@@ -753,7 +751,7 @@ export class AudioEnhancementProvider extends ModelProvider {
     } else if (category === 'audio-restoration') {
       return this.mockAudioRestorationResult(audio, modelInfo);
     }
-    
+
     return this.mockNoiseReductionResult(audio, modelInfo);
   }
 
@@ -799,13 +797,13 @@ export class AudioEnhancementProvider extends ModelProvider {
   }
 
   private validateEnhancementParameters(
-    parameters: any, 
-    errors: any[], 
+    parameters: any,
+    errors: any[],
     warnings: any[]
   ): void {
     // Validate noise reduction level
-    if (parameters.noise_reduction_level !== undefined) {
-      if (parameters.noise_reduction_level < 0 || parameters.noise_reduction_level > 1) {
+    if (parameters['noise_reduction_level'] !== undefined) {
+      if (parameters['noise_reduction_level'] < 0 || parameters['noise_reduction_level'] > 1) {
         errors.push({
           field: 'parameters.noise_reduction_level',
           message: 'Noise reduction level must be between 0 and 1',
@@ -815,8 +813,8 @@ export class AudioEnhancementProvider extends ModelProvider {
     }
 
     // Validate enhancement level
-    if (parameters.enhancement_level !== undefined) {
-      if (parameters.enhancement_level < 0 || parameters.enhancement_level > 1) {
+    if (parameters['enhancement_level'] !== undefined) {
+      if (parameters['enhancement_level'] < 0 || parameters['enhancement_level'] > 1) {
         errors.push({
           field: 'parameters.enhancement_level',
           message: 'Enhancement level must be between 0 and 1',
@@ -826,9 +824,9 @@ export class AudioEnhancementProvider extends ModelProvider {
     }
 
     // Validate sample rate
-    if (parameters.sample_rate !== undefined) {
+    if (parameters['sample_rate'] !== undefined) {
       const validSampleRates = [8000, 16000, 22050, 44100, 48000];
-      if (!validSampleRates.includes(parameters.sample_rate)) {
+      if (!validSampleRates.includes(parameters['sample_rate'])) {
         warnings.push({
           field: 'parameters.sample_rate',
           message: 'Unusual sample rate detected',
@@ -900,9 +898,9 @@ export class AudioEnhancementProvider extends ModelProvider {
     };
   }
 
-  async cleanup(): Promise<void> {
+  override async cleanup(): Promise<void> {
     // Dispose of all loaded models
-    for (const [modelId, model] of this.loadedModels) {
+    Array.from(this.loadedModels.entries()).forEach(([modelId, model]) => {
       try {
         if (model && model.dispose) {
           model.dispose();
@@ -910,7 +908,7 @@ export class AudioEnhancementProvider extends ModelProvider {
       } catch (error) {
         console.warn(`Failed to dispose audio enhancement model ${modelId}:`, error);
       }
-    }
+    });
     this.loadedModels.clear();
 
     // Cleanup audio processor
