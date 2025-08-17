@@ -1,5 +1,5 @@
 import { AIModel, ModelType, ModelCapability, AIProvider, ProviderType } from '../types/global';
-import { Logger } from '../utils/Logger';
+import { logger as globalLogger } from '../utils/Logger';
 
 /**
  * Comprehensive Model Manager for AAABuilder
@@ -9,10 +9,9 @@ export class ModelManager {
   private static instance: ModelManager;
   private models: Map<string, AIModel> = new Map();
   private providers: Map<string, AIProvider> = new Map();
-  private logger: Logger;
+  private logger = globalLogger;
 
   private constructor() {
-    this.logger = new Logger('ModelManager');
     this.initializeDefaultModels();
   }
 
@@ -488,8 +487,9 @@ export class ModelManager {
       'graph-analysis': ['graph-processing'],
     };
 
-    const requiredCapabilities = taskCapabilities[task] || ['text-generation'];
-    let candidates = this.getModelsByCapability(requiredCapabilities[0]);
+    const requiredCapabilities = (taskCapabilities[task] || ['text-generation']) as ModelCapability[];
+    const primaryCapability: ModelCapability = (requiredCapabilities[0] || 'text-generation') as ModelCapability;
+    let candidates = this.getModelsByCapability(primaryCapability);
 
     // Filter by constraints
     if (constraints?.maxSize) {

@@ -379,11 +379,9 @@ export async function testAudioProviders(registry: ModelRegistry): Promise<{
  */
 export class AudioProcessingPipeline {
   private registry: ModelRegistry;
-  private config: AudioProviderConfig;
 
-  constructor(registry: ModelRegistry, config: AudioProviderConfig = {}) {
+  constructor(registry: ModelRegistry, _config: AudioProviderConfig = {}) {
     this.registry = registry;
-    this.config = config;
   }
 
   /**

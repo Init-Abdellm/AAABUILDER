@@ -175,7 +175,6 @@ class Tokenizer {
   }
 
   private tokenizeQuotedString(quote: string): void {
-    const start = this.position;
     this.advance(); // Skip opening quote
 
     let value = '';
@@ -231,7 +230,6 @@ class Tokenizer {
 
   private tokenizeIdentifier(): void {
     let value = '';
-    const start = this.position;
 
     while (this.position < this.content.length) {
       const char = this.content[this.position];
@@ -642,8 +640,6 @@ export class EnhancedAgentParser {
 
         // Parse step properties
         while (!this.isAtEnd() && !this.check('DASH') && !this.checkAny(['OUTPUTS', 'AGENT_END'])) {
-          const propertyName = this.peek().value;
-
           if (this.check('KIND') || this.check('TYPE')) {
             this.advance();
             this.expectToken('COLON');
@@ -753,7 +749,6 @@ export class EnhancedAgentParser {
     // Handle template strings with braces
     let value = token.value;
     while (!this.isAtEnd() && !this.check('NEWLINE')) {
-      const nextToken = this.peek();
       if (this.checkAny(['PROMPT', 'INPUT', 'OPERATION', 'WHEN', 'SAVE', 'OUTPUTS', 'AGENT_END', 'DASH'])) {
         break;
       }
@@ -900,15 +895,6 @@ export class EnhancedAgentParser {
       column: token.column,
       context: this.getTokenContext(token),
       ...(suggestion && { suggestion }),
-    });
-  }
-
-  private addWarning(message: string, token: Token): void {
-    this.warnings.push({
-      message,
-      line: token.line,
-      column: token.column,
-      context: this.getTokenContext(token),
     });
   }
 

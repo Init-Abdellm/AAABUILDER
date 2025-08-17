@@ -46,7 +46,6 @@
     "isolatedModules": true,
     "noEmitOnError": true,
     "preserveConstEnums": true,
-    "removeComments": false,
     "useUnknownInCatchVariables": true,
     "verbatimModuleSyntax": false,
     "suppressImplicitAnyIndexErrors": false,
@@ -56,8 +55,7 @@
     "src/**/*",
     "lib/**/*",
     "plugins/**/*",
-    "templates/**/*",
-    "examples/**/*"
+    "templates/**/*"
   ],
   "exclude": [
     "node_modules",

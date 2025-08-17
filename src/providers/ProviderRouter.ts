@@ -25,7 +25,6 @@ import {
   registerAudioProviders, 
   unregisterAudioProviders,
   AudioProcessingPipeline,
-  DEFAULT_AUDIO_CONFIG
 } from './AudioProviders';
 
 /**
@@ -303,11 +302,12 @@ export class ProviderRouter {
 
     // Initialize Audio Processing Pipeline
     if (this.hasAudioProviders()) {
-      this.audioPipeline = new AudioProcessingPipeline(this.registry, {
-        speakerEmotion: this.config.speakerEmotion,
-        audioEnhancement: this.config.audioEnhancement,
-        realTimeAudio: this.config.realTimeAudio
-      });
+      const audioPipelineConfig: any = {
+        ...(this.config.speakerEmotion ? { speakerEmotion: this.config.speakerEmotion } : {}),
+        ...(this.config.audioEnhancement ? { audioEnhancement: this.config.audioEnhancement } : {}),
+        ...(this.config.realTimeAudio ? { realTimeAudio: this.config.realTimeAudio } : {})
+      };
+      this.audioPipeline = new AudioProcessingPipeline(this.registry, audioPipelineConfig);
     }
 
     // Initialize Model Optimizer
@@ -715,10 +715,10 @@ export class ProviderRouter {
 
     // Register advanced audio providers using the audio provider utility
     try {
-      const audioConfig = {
-        speakerEmotion: this.config.speakerEmotion,
-        audioEnhancement: this.config.audioEnhancement,
-        realTimeAudio: this.config.realTimeAudio
+      const audioConfig: any = {
+        ...(this.config.speakerEmotion ? { speakerEmotion: this.config.speakerEmotion } : {}),
+        ...(this.config.audioEnhancement ? { audioEnhancement: this.config.audioEnhancement } : {}),
+        ...(this.config.realTimeAudio ? { realTimeAudio: this.config.realTimeAudio } : {})
       };
 
       const audioResult = await registerAudioProviders(this.registry, audioConfig);

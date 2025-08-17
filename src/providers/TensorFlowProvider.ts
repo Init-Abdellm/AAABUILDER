@@ -28,14 +28,14 @@ export class TensorFlowProvider extends ModelProvider {
     });
   }
 
-  supports(modelType: ModelType): boolean {
+  override supports(modelType: ModelType): boolean {
     const supportedTypes: ModelType[] = [
       'CNN', 'RNN', 'MLP', 'Transformer', 'Autoencoder', 'GAN'
     ];
     return supportedTypes.includes(modelType);
   }
 
-  async execute(request: ModelRequest): Promise<ModelResponse> {
+  override async execute(request: ModelRequest): Promise<ModelResponse> {
     const startTime = Date.now();
     
     try {
@@ -67,7 +67,7 @@ export class TensorFlowProvider extends ModelProvider {
         ...response,
         usage: {
           ...response.usage,
-          duration
+          duration: duration / 1000 // Convert to seconds
         }
       };
 
@@ -76,7 +76,7 @@ export class TensorFlowProvider extends ModelProvider {
     }
   }
 
-  getCapabilities(): ModelCapabilities {
+  override getCapabilities(): ModelCapabilities {
     return {
       supportedTypes: ['CNN', 'RNN', 'MLP', 'Transformer', 'Autoencoder', 'GAN'],
       capabilities: [
@@ -84,11 +84,10 @@ export class TensorFlowProvider extends ModelProvider {
         'image-segmentation',
         'object-detection',
         'text-generation',
-        'sequence-processing',
         'time-series',
         'anomaly-detection',
         'image-generation',
-        'feature-extraction'
+        'feature-selection'
       ],
       maxInputSize: 10000000, // 10M parameters
       maxOutputSize: 1000000,
@@ -100,9 +99,9 @@ export class TensorFlowProvider extends ModelProvider {
     };
   }
 
-  validateConfig(config: ModelConfig): ValidationResult {
-    const errors = [];
-    const warnings = [];
+  override validateConfig(config: ModelConfig): ValidationResult {
+    const errors: any[] = [];
+    const warnings: any[] = [];
 
     // Validate model name
     if (!config.model) {
@@ -125,7 +124,7 @@ export class TensorFlowProvider extends ModelProvider {
     };
   }
 
-  async listModels(): Promise<ModelInfo[]> {
+  override async listModels(): Promise<ModelInfo[]> {
     const models: ModelInfo[] = [
       // CNN Models
       {
@@ -315,12 +314,12 @@ export class TensorFlowProvider extends ModelProvider {
     return models;
   }
 
-  async getModelInfo(modelId: string): Promise<ModelInfo | null> {
+  override async getModelInfo(modelId: string): Promise<ModelInfo | null> {
     const models = await this.listModels();
     return models.find(m => m.id === modelId) || null;
   }
 
-  async isAvailable(): Promise<boolean> {
+  override async isAvailable(): Promise<boolean> {
     try {
       // Check if TensorFlow.js is available
       if (typeof window !== 'undefined') {
@@ -345,18 +344,18 @@ export class TensorFlowProvider extends ModelProvider {
     }
   }
 
-  async initialize(): Promise<void> {
+  override async initialize(): Promise<void> {
     try {
       // Initialize TensorFlow.js
       await this.initializeTensorFlow();
       
       // Set backend
       if (this.tf && this.tf.setBackend) {
-        await this.tf.setBackend(this.config.backend);
+        await this.tf.setBackend(this.config['backend']);
       }
 
       // Configure memory growth
-      if (this.config.memoryGrowth && this.tf && this.tf.env) {
+      if (this.config['memoryGrowth'] && this.tf && this.tf.env) {
         this.tf.env().set('WEBGL_DELETE_TEXTURE_THRESHOLD', 0);
       }
 
@@ -367,7 +366,7 @@ export class TensorFlowProvider extends ModelProvider {
     }
   }
 
-  async cleanup(): Promise<void> {
+  override async cleanup(): Promise<void> {
     // Dispose of all loaded models
     for (const [modelId, model] of this.loadedModels) {
       try {
@@ -437,13 +436,13 @@ export class TensorFlowProvider extends ModelProvider {
     };
   }
 
-  private async executeModel(model: any, inputTensor: any, request: ModelRequest): Promise<any> {
+  private async executeModel(model: any, inputTensor: any, _request: ModelRequest): Promise<any> {
     // Mock model execution
     const output = model.predict(inputTensor);
     return output;
   }
 
-  private mockPredict(input: any, modelId: string): any {
+  private mockPredict(_input: any, modelId: string): any {
     const modelInfo = this.getModelTypeInfo(modelId);
     
     if (modelInfo.type === 'CNN') {
@@ -515,12 +514,12 @@ export class TensorFlowProvider extends ModelProvider {
         inputSize: this.calculateTensorSize(model.inputShape),
         outputSize: this.calculateTensorSize(outputTensor.shape),
         memoryUsage: this.estimateMemoryUsage(model),
-        processingTime: 0 // Will be set by caller
+        duration: 0 // Will be set by caller
       },
       finishReason: 'completed',
       metadata: {
         provider: this.name,
-        backend: this.config.backend,
+        backend: this.config['backend'],
         model_type: modelInfo.type,
         task_type: modelInfo.task
       }

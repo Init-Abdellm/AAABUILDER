@@ -183,7 +183,7 @@ describe('ModelCapabilityDetector', () => {
         'text-generation', 'code-generation'
       ];
       const optionalCapabilities: ModelCapability[] = [
-        'streaming', 'function-calling'
+        'streaming', 'code-generation'
       ];
 
       const result = ModelCapabilityDetector.validateCapabilities(
@@ -205,7 +205,7 @@ describe('ModelCapabilityDetector', () => {
         'text-generation'
       ];
       const requiredCapabilities: ModelCapability[] = [
-        'text-generation', 'code-generation', 'function-calling'
+        'text-generation', 'code-generation'
       ];
 
       const result = ModelCapabilityDetector.validateCapabilities(
@@ -215,7 +215,7 @@ describe('ModelCapabilityDetector', () => {
 
       expect(result.valid).toBe(false);
       expect(result.score).toBe(1/3); // 1 out of 3 required capabilities
-      expect(result.missing).toEqual(['code-generation', 'function-calling']);
+      expect(result.missing).toEqual(['code-generation']);
       expect(result.present).toEqual(['text-generation']);
       expect(result.summary).toContain('Missing 2 required capabilities');
     });

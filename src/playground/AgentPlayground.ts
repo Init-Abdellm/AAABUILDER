@@ -88,6 +88,9 @@ export class AgentPlayground {
      */
     private async handleCommand(input: string): Promise<void> {
         const [commandName, ...args] = input.split(' ');
+        if (!commandName) {
+            return;
+        }
         const command = this.commands.get(commandName.toLowerCase());
 
         if (command) {
@@ -136,6 +139,10 @@ export class AgentPlayground {
                 const filePath = args[0];
                 try {
                     const fs = await import('fs/promises');
+                    if (!filePath) {
+                        console.log('Usage: load <file-path>');
+                        return;
+                    }
                     const content = await fs.readFile(filePath, 'utf-8');
                     this.currentAgent = content;
                     console.log(`✅ Loaded agent from: ${filePath}`);
@@ -144,8 +151,8 @@ export class AgentPlayground {
                     const parseResult = this.parser.parse(content);
                     if (parseResult.ast) {
                         console.log(`   Agent ID: ${parseResult.ast.id}`);
-                        console.log(`   Steps: ${parseResult.ast.steps.length}`);
-                        console.log(`   Variables: ${Object.keys(parseResult.ast.vars).length}`);
+                        console.log(`   Steps: ${parseResult.ast.steps?.length ?? 0}`);
+                        console.log(`   Variables: ${Object.keys(parseResult.ast.vars ?? {}).length}`);
                     } else {
                         console.log('⚠️  Agent has parse errors');
                     }
@@ -235,9 +242,9 @@ outputs:
                     console.log(`   Agent ID: ${parseResult.ast.id}`);
                     console.log(`   Version: v${parseResult.ast.version}`);
                     console.log(`   Description: ${parseResult.ast.description || 'None'}`);
-                    console.log(`   Steps: ${parseResult.ast.steps.length}`);
-                    console.log(`   Variables: ${Object.keys(parseResult.ast.vars).length}`);
-                    console.log(`   Outputs: ${Object.keys(parseResult.ast.outputs).length}`);
+                    console.log(`   Steps: ${parseResult.ast.steps?.length ?? 0}`);
+                    console.log(`   Variables: ${Object.keys(parseResult.ast.vars ?? {}).length}`);
+                    console.log(`   Outputs: ${Object.keys(parseResult.ast.outputs ?? {}).length}`);
                 } else {
                     console.log('❌ Parse failed');
                 }
@@ -312,7 +319,7 @@ outputs:
                         }
                     } else {
                         console.log('✅ Debug session completed');
-                        this.currentSession = undefined;
+                        delete this.currentSession;
                     }
                 } catch (error) {
                     console.error(`❌ Step execution failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -338,12 +345,12 @@ outputs:
                     const session = this.debugger.getSessionState(this.currentSession);
                     if (session?.status === 'completed') {
                         console.log('✅ Debug session completed');
-                        this.currentSession = undefined;
+                        delete this.currentSession;
                     } else if (session?.status === 'paused') {
                         console.log('⏸️  Execution paused at breakpoint');
                     } else if (session?.status === 'error') {
                         console.log('❌ Execution failed');
-                        this.currentSession = undefined;
+                        delete this.currentSession;
                     }
                 } catch (error) {
                     console.error(`❌ Continue failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -370,7 +377,7 @@ outputs:
 
                 console.log('\n📊 Current Variables:');
                 console.log('====================');
-                for (const [name, value] of Object.entries(session.variables)) {
+                for (const [name, value] of Object.entries(session.variables ?? {})) {
                     const valueStr = typeof value === 'string'
                         ? `"${value}"`
                         : JSON.stringify(value, null, 2);
@@ -494,17 +501,20 @@ outputs:
                 console.log(`Total Models: ${models.length}`);
                 console.log(`Active Providers: ${stats.enabledProviders}`);
 
-                // Group by provider
+                // Group by provider with safe keying
                 const modelsByProvider = models.reduce((acc, model) => {
-                    if (!acc[model.provider]) acc[model.provider] = [];
-                    acc[model.provider].push(model);
+                    const key = String((model as any)?.provider ?? 'unknown');
+                    if (!acc[key]) acc[key] = [];
+                    acc[key].push(model);
                     return acc;
                 }, {} as Record<string, any[]>);
 
                 for (const [provider, providerModels] of Object.entries(modelsByProvider)) {
                     console.log(`\n${provider} (${providerModels.length} models):`);
-                    providerModels.slice(0, 5).forEach(model => {
-                        console.log(`  - ${model.name} (${model.id})`);
+                    providerModels.slice(0, 5).forEach((model) => {
+                        const name = (model as any)?.name ?? 'unknown';
+                        const id = (model as any)?.id ?? 'unknown';
+                        console.log(`  - ${name} (${id})`);
                     });
                     if (providerModels.length > 5) {
                         console.log(`  ... and ${providerModels.length - 5} more`);

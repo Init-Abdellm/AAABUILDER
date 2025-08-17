@@ -25,14 +25,14 @@ export class XGBoostProvider extends ModelProvider {
     });
   }
 
-  supports(modelType: ModelType): boolean {
+  override supports(modelType: ModelType): boolean {
     const supportedTypes: ModelType[] = [
       'MLP', 'Transformer' // XGBoost can be used as base for various architectures
     ];
     return supportedTypes.includes(modelType);
   }
 
-  async execute(request: ModelRequest): Promise<ModelResponse> {
+  override async execute(request: ModelRequest): Promise<ModelResponse> {
     const startTime = Date.now();
     
     try {
@@ -61,7 +61,7 @@ export class XGBoostProvider extends ModelProvider {
         usage: {
           inputSize: this.calculateInputSize(request.input),
           outputSize: result.predictions?.length || 0,
-          processingTime: 0
+          duration: Date.now() - startTime
         },
         finishReason: 'completed',
         metadata: {
@@ -72,26 +72,20 @@ export class XGBoostProvider extends ModelProvider {
       };
       const response = await this.processResponse(baseResponse);
       
-      const duration = Date.now() - startTime;
-      
-      return {
-        ...response,
-        usage: {
-          ...response.usage,
-          duration
-        }
-      };
+      return response;
 
     } catch (error) {
       throw new Error(`XGBoost execution failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
-  getCapabilities(): ModelCapabilities {
+  override getCapabilities(): ModelCapabilities {
     return {
       supportedTypes: ['MLP', 'Transformer'],
       capabilities: [
-        'text-generation'
+        'text-classification',
+        'anomaly-detection',
+        'feature-selection'
       ],
       maxInputSize: 10000000, // 10M features
       maxOutputSize: 1000000,
@@ -103,7 +97,7 @@ export class XGBoostProvider extends ModelProvider {
     };
   }
 
-  validateConfig(config: ModelConfig): ValidationResult {
+  override validateConfig(config: ModelConfig): ValidationResult {
     const errors: any[] = [];
     const warnings: any[] = [];
 
@@ -128,7 +122,7 @@ export class XGBoostProvider extends ModelProvider {
     };
   }
 
-  async listModels(): Promise<ModelInfo[]> {
+  override async listModels(): Promise<ModelInfo[]> {
     const models: ModelInfo[] = [
       // Classification Models
       {
@@ -253,12 +247,12 @@ export class XGBoostProvider extends ModelProvider {
     return models;
   }
 
-  async getModelInfo(modelId: string): Promise<ModelInfo | null> {
+  override async getModelInfo(modelId: string): Promise<ModelInfo | null> {
     const models = await this.listModels();
     return models.find(m => m.id === modelId) || null;
   }
 
-  async isAvailable(): Promise<boolean> {
+  override async isAvailable(): Promise<boolean> {
     try {
       // Check if Python and XGBoost are available
       const result = await this.executePythonCommand([

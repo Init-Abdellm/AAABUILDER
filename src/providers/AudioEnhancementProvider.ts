@@ -33,12 +33,12 @@ export class AudioEnhancementProvider extends ModelProvider {
     });
   }
 
-  supports(modelType: ModelType): boolean {
+  override supports(modelType: ModelType): boolean {
     const supportedTypes: ModelType[] = ['RNN', 'CNN', 'Transformer', 'GAN'];
     return supportedTypes.includes(modelType);
   }
 
-  async execute(request: ModelRequest): Promise<ModelResponse> {
+  override async execute(request: ModelRequest): Promise<ModelResponse> {
     const startTime = Date.now();
 
     try {
@@ -79,7 +79,7 @@ export class AudioEnhancementProvider extends ModelProvider {
     }
   }
 
-  getCapabilities(): ModelCapabilities {
+  override getCapabilities(): ModelCapabilities {
     return {
       supportedTypes: ['RNN', 'CNN', 'Transformer', 'GAN'],
       capabilities: [
@@ -95,7 +95,7 @@ export class AudioEnhancementProvider extends ModelProvider {
     };
   }
 
-  validateConfig(config: ModelConfig): ValidationResult {
+  override validateConfig(config: ModelConfig): ValidationResult {
     const errors: any[] = [];
     const warnings: any[] = [];
 
@@ -120,7 +120,7 @@ export class AudioEnhancementProvider extends ModelProvider {
     };
   }
 
-  async listModels(): Promise<ModelInfo[]> {
+  override async listModels(): Promise<ModelInfo[]> {
     const models: ModelInfo[] = [
       // Noise Reduction Models
       {
@@ -377,12 +377,12 @@ export class AudioEnhancementProvider extends ModelProvider {
     return models;
   }
 
-  async getModelInfo(modelId: string): Promise<ModelInfo | null> {
+  override async getModelInfo(modelId: string): Promise<ModelInfo | null> {
     const models = await this.listModels();
     return models.find(m => m.id === modelId) || null;
   }
 
-  async isAvailable(): Promise<boolean> {
+  override async isAvailable(): Promise<boolean> {
     try {
       // Check backend availability
       if (this.config['backend'] === 'rnnoise') {
@@ -487,7 +487,7 @@ export class AudioEnhancementProvider extends ModelProvider {
     const enhancedAudio = await this.applyNoiseReduction(model, preprocessedAudio, request);
 
     // Analyze enhancement quality
-    const qualityMetrics = await this.analyzeEnhancementQuality(preprocessedAudio, enhancedAudio);
+    const qualityMetrics = await this.analyzeEnhancementQuality(enhancedAudio);
 
     return this.formatEnhancementResponse(enhancedAudio, qualityMetrics, request, model, 'noise-reduction');
   }
@@ -503,7 +503,7 @@ export class AudioEnhancementProvider extends ModelProvider {
     const enhancedAudio = await this.applySpeechEnhancement(model, preprocessedAudio, request);
 
     // Analyze enhancement quality
-    const qualityMetrics = await this.analyzeEnhancementQuality(preprocessedAudio, enhancedAudio);
+    const qualityMetrics = await this.analyzeEnhancementQuality(enhancedAudio);
 
     return this.formatEnhancementResponse(enhancedAudio, qualityMetrics, request, model, 'speech-enhancement');
   }
@@ -519,7 +519,7 @@ export class AudioEnhancementProvider extends ModelProvider {
     const restoredAudio = await this.applyAudioRestoration(model, preprocessedAudio, request);
 
     // Analyze restoration quality
-    const qualityMetrics = await this.analyzeEnhancementQuality(preprocessedAudio, restoredAudio);
+    const qualityMetrics = await this.analyzeEnhancementQuality(restoredAudio);
 
     return this.formatEnhancementResponse(restoredAudio, qualityMetrics, request, model, 'audio-restoration');
   }
@@ -532,7 +532,7 @@ export class AudioEnhancementProvider extends ModelProvider {
     const pipeline = await this.setupRealTimePipeline(model, request);
 
     // Process audio in chunks
-    const processedAudio = await this.processAudioRealTime(pipeline, request.input, request);
+    const processedAudio = await this.processAudioRealTime(pipeline, request.input);
 
     // Analyze processing performance
     const performanceMetrics = await this.analyzeRealTimePerformance(pipeline);
@@ -554,10 +554,10 @@ export class AudioEnhancementProvider extends ModelProvider {
     const mockModel = {
       id: modelId,
       info: modelInfo,
-      category: modelInfo.metadata.category,
+      category: modelInfo.metadata['category'],
       sampleRate: modelInfo.parameters['sample_rate'] || 16000,
       frameSize: modelInfo.parameters['frame_size'] || 480,
-      enhance: (audio: any, options: any) => this.mockEnhancement(audio, modelInfo, options)
+      enhance: (audio: any, _options: any) => this.mockEnhancement(audio, modelInfo)
     };
 
     this.loadedModels.set(modelId, mockModel);
@@ -640,19 +640,19 @@ export class AudioEnhancementProvider extends ModelProvider {
     };
   }
 
-  private async applyNoiseReduction(model: any, preprocessedAudio: any, request: ModelRequest): Promise<any> {
+  private async applyNoiseReduction(model: any, preprocessedAudio: any, _request: ModelRequest): Promise<any> {
     return model.enhance(preprocessedAudio, { task: 'noise-reduction' });
   }
 
-  private async applySpeechEnhancement(model: any, preprocessedAudio: any, request: ModelRequest): Promise<any> {
+  private async applySpeechEnhancement(model: any, preprocessedAudio: any, _request: ModelRequest): Promise<any> {
     return model.enhance(preprocessedAudio, { task: 'speech-enhancement' });
   }
 
-  private async applyAudioRestoration(model: any, preprocessedAudio: any, request: ModelRequest): Promise<any> {
+  private async applyAudioRestoration(model: any, preprocessedAudio: any, _request: ModelRequest): Promise<any> {
     return model.enhance(preprocessedAudio, { task: 'audio-restoration' });
   }
 
-  private async setupRealTimePipeline(model: any, request: ModelRequest): Promise<any> {
+  private async setupRealTimePipeline(model: any, _request: ModelRequest): Promise<any> {
     return {
       model,
       buffer_size: 480,
@@ -661,11 +661,11 @@ export class AudioEnhancementProvider extends ModelProvider {
     };
   }
 
-  private async processAudioRealTime(pipeline: any, input: any, request: ModelRequest): Promise<any> {
+  private async processAudioRealTime(pipeline: any, input: any): Promise<any> {
     return pipeline.model.enhance(input, { task: 'real-time', pipeline });
   }
 
-  private async analyzeEnhancementQuality(original: any, enhanced: any): Promise<any> {
+  private async analyzeEnhancementQuality(_enhancedAudio: any): Promise<any> {
     return {
       snr_improvement: Math.random() * 15 + 5, // 5-20 dB
       pesq_score: Math.random() * 1.5 + 2.5, // 2.5-4.0
@@ -701,7 +701,7 @@ export class AudioEnhancementProvider extends ModelProvider {
       usage: {
         inputSize: this.calculateAudioSize(request.input),
         outputSize: this.calculateAudioSize(enhancedAudio),
-        processingTime: 0
+        duration: 0
       },
       finishReason: 'completed',
       metadata: {
@@ -729,7 +729,7 @@ export class AudioEnhancementProvider extends ModelProvider {
       usage: {
         inputSize: this.calculateAudioSize(request.input),
         outputSize: this.calculateAudioSize(processedAudio),
-        processingTime: 0
+        duration: 0
       },
       finishReason: 'completed',
       metadata: {
@@ -741,8 +741,8 @@ export class AudioEnhancementProvider extends ModelProvider {
     };
   }
 
-  private mockEnhancement(audio: any, modelInfo: ModelInfo, options: any): any {
-    const category = modelInfo.metadata.category;
+  private mockEnhancement(audio: any, modelInfo: ModelInfo): any {
+    const category = modelInfo.metadata['category'];
 
     if (category === 'noise-reduction') {
       return this.mockNoiseReductionResult(audio, modelInfo);
@@ -755,7 +755,7 @@ export class AudioEnhancementProvider extends ModelProvider {
     return this.mockNoiseReductionResult(audio, modelInfo);
   }
 
-  private mockNoiseReductionResult(audio: any, modelInfo: ModelInfo): any {
+  private mockNoiseReductionResult(audio: any, _modelInfo: ModelInfo): any {
     return {
       enhanced_audio: audio, // Mock enhanced audio
       noise_reduction_db: Math.random() * 15 + 5, // 5-20 dB
@@ -765,7 +765,7 @@ export class AudioEnhancementProvider extends ModelProvider {
     };
   }
 
-  private mockSpeechEnhancementResult(audio: any, modelInfo: ModelInfo): any {
+  private mockSpeechEnhancementResult(audio: any, _modelInfo: ModelInfo): any {
     return {
       enhanced_audio: audio, // Mock enhanced audio
       clarity_improvement: Math.random() * 0.3 + 0.7, // 70-100%
@@ -781,7 +781,7 @@ export class AudioEnhancementProvider extends ModelProvider {
       artifacts_removed: ['clipping', 'noise', 'distortion'],
       restoration_quality: Math.random() * 0.3 + 0.7, // 70-100%
       fidelity_score: Math.random() * 0.2 + 0.8, // 80-100%
-      bandwidth_extended: modelInfo.metadata.bandwidth_extension || false
+      bandwidth_extended: Boolean(modelInfo.metadata['bandwidth_extension']) || false
     };
   }
 

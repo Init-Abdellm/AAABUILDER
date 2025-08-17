@@ -19,7 +19,6 @@ export class RealTimeAudioProvider extends ModelProvider {
   private audioBuffers: Map<string, any> = new Map();
   private processingPipelines: Map<string, any> = new Map();
   private level: number = 0;
-  private _buffer: any = null;
 
   constructor(config: Record<string, any> = {}) {
     super('real-time-audio', 'audio-streaming', {
@@ -37,12 +36,12 @@ export class RealTimeAudioProvider extends ModelProvider {
     });
   }
 
-  supports(modelType: ModelType): boolean {
+  override supports(modelType: ModelType): boolean {
     const supportedTypes: ModelType[] = ['RNN', 'CNN', 'Transformer'];
     return supportedTypes.includes(modelType);
   }
 
-  async execute(request: ModelRequest): Promise<ModelResponse> {
+  override async execute(request: ModelRequest): Promise<ModelResponse> {
     const startTime = Date.now();
     
     try {
@@ -83,7 +82,7 @@ export class RealTimeAudioProvider extends ModelProvider {
     }
   }
 
-  getCapabilities(): ModelCapabilities {
+  override getCapabilities(): ModelCapabilities {
     return {
       supportedTypes: ['RNN', 'CNN', 'Transformer'],
       capabilities: [
@@ -101,7 +100,7 @@ export class RealTimeAudioProvider extends ModelProvider {
     };
   }
 
-  validateConfig(config: ModelConfig): ValidationResult {
+  override validateConfig(config: ModelConfig): ValidationResult {
     const errors: any[] = [];
     const warnings: any[] = [];
 
@@ -126,7 +125,7 @@ export class RealTimeAudioProvider extends ModelProvider {
     };
   }
 
-  async listModels(): Promise<ModelInfo[]> {
+  override async listModels(): Promise<ModelInfo[]> {
     const models: ModelInfo[] = [
       // Real-time Transcription Models
       {
@@ -418,12 +417,12 @@ export class RealTimeAudioProvider extends ModelProvider {
     return models;
   }
 
-  async getModelInfo(modelId: string): Promise<ModelInfo | null> {
+  override async getModelInfo(modelId: string): Promise<ModelInfo | null> {
     const models = await this.listModels();
     return models.find(m => m.id === modelId) || null;
   }
 
-  async isAvailable(): Promise<boolean> {
+  override async isAvailable(): Promise<boolean> {
     try {
       // Check backend availability
       if (this.config['backend'] === 'webrtc') {
@@ -685,7 +684,6 @@ export class RealTimeAudioProvider extends ModelProvider {
       getProcessingChunk: () => new Array(config.frame_size || 160).fill(Math.random()),
       getLevel: () => this.level,
       cleanup: () => {
-        this._buffer = null;
         this.level = 0;
       }
     };
@@ -902,7 +900,7 @@ export class RealTimeAudioProvider extends ModelProvider {
       usage: {
         inputSize: this.calculateAudioSize(request.input),
         outputSize: this.calculateResultSize(results),
-        processingTime: model.latency
+        duration: model.latency
       },
       finishReason: 'completed',
       metadata: {

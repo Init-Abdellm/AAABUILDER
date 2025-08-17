@@ -31,12 +31,12 @@ export class SpeakerEmotionProvider extends ModelProvider {
     });
   }
 
-  supports(modelType: ModelType): boolean {
+  override supports(modelType: ModelType): boolean {
     const supportedTypes: ModelType[] = ['ASR', 'CNN', 'Transformer'];
     return supportedTypes.includes(modelType);
   }
 
-  async execute(request: ModelRequest): Promise<ModelResponse> {
+  override async execute(request: ModelRequest): Promise<ModelResponse> {
     const startTime = Date.now();
     
     try {
@@ -80,7 +80,7 @@ export class SpeakerEmotionProvider extends ModelProvider {
       throw new Error(`Speaker/Emotion analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   } 
- getCapabilities(): ModelCapabilities {
+ override getCapabilities(): ModelCapabilities {
     return {
       supportedTypes: ['ASR', 'CNN', 'Transformer'],
       capabilities: [
@@ -98,7 +98,7 @@ export class SpeakerEmotionProvider extends ModelProvider {
     };
   }
 
-  validateConfig(config: ModelConfig): ValidationResult {
+  override validateConfig(config: ModelConfig): ValidationResult {
     const errors = [];
     const warnings: any[] = [];
 
@@ -123,7 +123,7 @@ export class SpeakerEmotionProvider extends ModelProvider {
     };
   }
 
-  async listModels(): Promise<ModelInfo[]> {
+  override async listModels(): Promise<ModelInfo[]> {
     const models: ModelInfo[] = [
       // Speaker Identification Models
       {
@@ -299,12 +299,12 @@ export class SpeakerEmotionProvider extends ModelProvider {
     return models;
   }
 
-  async getModelInfo(modelId: string): Promise<ModelInfo | null> {
+  override async getModelInfo(modelId: string): Promise<ModelInfo | null> {
     const models = await this.listModels();
     return models.find(m => m.id === modelId) || null;
   }
 
-  async isAvailable(): Promise<boolean> {
+  override async isAvailable(): Promise<boolean> {
     try {
       // Check backend availability
       if (this.config['backend'] === 'pyannote') {
@@ -469,7 +469,7 @@ export class SpeakerEmotionProvider extends ModelProvider {
       usage: {
         inputSize: this.calculateAudioSize(request.input),
         outputSize: speakerResults.speakers.length,
-        processingTime: 0
+        duration: 0
       },
       finishReason: 'completed',
       metadata: {
@@ -497,7 +497,7 @@ export class SpeakerEmotionProvider extends ModelProvider {
       usage: {
         inputSize: this.calculateAudioSize(request.input),
         outputSize: emotionResults.segments.length,
-        processingTime: 0
+        duration: 0
       },
       finishReason: 'completed',
       metadata: {
@@ -531,7 +531,7 @@ export class SpeakerEmotionProvider extends ModelProvider {
       usage: {
         inputSize: this.calculateAudioSize(request.input),
         outputSize: speakerResults.speakers.length + emotionResults.segments.length,
-        processingTime: 0
+        duration: 0
       },
       finishReason: 'completed',
       metadata: {

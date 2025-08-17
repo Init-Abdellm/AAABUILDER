@@ -509,8 +509,8 @@ export class VisionTransformerProvider extends ModelProvider {
     const probabilities = expLogits.map(x => x / sumExp);
 
     // Generate attention maps
-    const attentionMaps = Array.from({ length: numLayers }, (_, layer) =>
-      Array.from({ length: numHeads }, (_, head) =>
+    const attentionMaps = Array.from({ length: numLayers }, (_, _layer) =>
+      Array.from({ length: numHeads }, (_, _head) =>
         Array.from({ length: numPatches + 1 }, () =>
           Array.from({ length: numPatches + 1 }, () => Math.random())
         )

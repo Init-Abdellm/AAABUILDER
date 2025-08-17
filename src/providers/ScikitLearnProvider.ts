@@ -14,26 +14,24 @@ import { ModelType } from '../types/global';
  * Supports traditional ML models via Python bridge
  */
 export class ScikitLearnProvider extends ModelProvider {
-  private pythonBridge: any;
-  private availableModels: Map<string, any> = new Map();
 
   constructor(config: Record<string, any> = {}) {
     super('scikit-learn', 'traditional-ml', {
-      pythonPath: config.pythonPath || 'python',
-      timeout: config.timeout || 30000,
-      maxConcurrency: config.maxConcurrency || 4,
+      pythonPath: config['pythonPath'] || 'python',
+      timeout: config['timeout'] || 30000,
+      maxConcurrency: config['maxConcurrency'] || 4,
       ...config
     });
   }
 
-  supports(modelType: ModelType): boolean {
+  override supports(modelType: ModelType): boolean {
     const supportedTypes: ModelType[] = [
       'MLP', 'CNN', 'RNN', 'Autoencoder'
     ];
     return supportedTypes.includes(modelType);
   }
 
-  async execute(request: ModelRequest): Promise<ModelResponse> {
+  override async execute(request: ModelRequest): Promise<ModelResponse> {
     const startTime = Date.now();
     
     try {
@@ -48,9 +46,29 @@ export class ScikitLearnProvider extends ModelProvider {
       
       // Execute model via Python bridge
       const result = await this.executePythonModel(pythonRequest);
-      
-      // Process and format response
-      const response = await this.processResponse(result, request);
+
+      // Build base response and run through provider post-processing
+      const baseResponse: ModelResponse = {
+        content: {
+          predictions: result.predictions,
+          probabilities: result.probabilities,
+          feature_importance: result.feature_importance,
+          model_info: result.model_info
+        },
+        model: request.model,
+        usage: {
+          inputSize: this.calculateInputSize(request.input),
+          outputSize: Array.isArray(result.predictions) ? result.predictions.length : 0,
+          duration: 0
+        },
+        finishReason: 'completed',
+        metadata: {
+          provider: this.name,
+          task_type: result.model_info.task_type,
+          n_features: result.model_info.n_features
+        }
+      };
+      const response = await this.processResponse(baseResponse);
       
       const duration = Date.now() - startTime;
       
@@ -67,12 +85,11 @@ export class ScikitLearnProvider extends ModelProvider {
     }
   }
 
-  getCapabilities(): ModelCapabilities {
+  override getCapabilities(): ModelCapabilities {
     return {
       supportedTypes: ['MLP', 'CNN', 'RNN', 'Autoencoder'],
       capabilities: [
-        'classification',
-        'regression',
+        'text-classification',
         'clustering',
         'anomaly-detection',
         'dimensionality-reduction',
@@ -87,7 +104,7 @@ export class ScikitLearnProvider extends ModelProvider {
     };
   }
 
-  validateConfig(config: ModelConfig): ValidationResult {
+  override validateConfig(config: ModelConfig): ValidationResult {
     const errors = [];
     const warnings = [];
 
@@ -128,7 +145,7 @@ export class ScikitLearnProvider extends ModelProvider {
     };
   }
 
-  async listModels(): Promise<ModelInfo[]> {
+  override async listModels(): Promise<ModelInfo[]> {
     const models: ModelInfo[] = [
       // Classification Models
       {
@@ -276,12 +293,12 @@ export class ScikitLearnProvider extends ModelProvider {
     return models;
   }
 
-  async getModelInfo(modelId: string): Promise<ModelInfo | null> {
+  override async getModelInfo(modelId: string): Promise<ModelInfo | null> {
     const models = await this.listModels();
     return models.find(m => m.id === modelId) || null;
   }
 
-  async isAvailable(): Promise<boolean> {
+  override async isAvailable(): Promise<boolean> {
     try {
       // Check if Python and scikit-learn are available
       const result = await this.executePythonCommand([
@@ -294,7 +311,7 @@ export class ScikitLearnProvider extends ModelProvider {
     }
   }
 
-  async initialize(): Promise<void> {
+  override async initialize(): Promise<void> {
     try {
       // Initialize Python bridge
       await this.initializePythonBridge();
@@ -403,27 +420,9 @@ export class ScikitLearnProvider extends ModelProvider {
     return [0.3, 0.2, 0.15, 0.1, 0.25];
   }
 
-  protected async processResponse(result: any, request: ModelRequest): Promise<ModelResponse> {
-    return {
-      content: {
-        predictions: result.predictions,
-        probabilities: result.probabilities,
-        feature_importance: result.feature_importance,
-        model_info: result.model_info
-      },
-      model: request.model,
-      usage: {
-        inputSize: this.calculateInputSize(request.input),
-        outputSize: result.predictions.length,
-        processingTime: 0 // Will be set by caller
-      },
-      finishReason: 'completed',
-      metadata: {
-        provider: this.name,
-        task_type: result.model_info.task_type,
-        n_features: result.model_info.n_features
-      }
-    };
+  protected override async processResponse(response: ModelResponse): Promise<ModelResponse> {
+    // Add any scikit-learn specific post-processing here if needed
+    return response;
   }
 
   private calculateInputSize(input: any): number {
@@ -465,13 +464,10 @@ export class ScikitLearnProvider extends ModelProvider {
 
   private async initializePythonBridge(): Promise<void> {
     // Initialize Python bridge (mock implementation)
-    this.pythonBridge = {
-      initialized: true,
-      version: '3.8+'
-    };
+    // Bridge initialization completed
   }
 
-  private async executePythonCommand(args: string[]): Promise<{ success: boolean; output?: string; error?: string }> {
+  private async executePythonCommand(_args: string[]): Promise<{ success: boolean; output?: string; error?: string }> {
     // Mock Python command execution
     return {
       success: true,

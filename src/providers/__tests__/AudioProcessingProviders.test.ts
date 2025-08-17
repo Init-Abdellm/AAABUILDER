@@ -169,8 +169,8 @@ describe('Audio Processing Providers', () => {
       expect(response.content.speaker_analysis).toBeDefined();
       expect(response.content.speaker_analysis.speakers).toBeInstanceOf(Array);
       expect(response.content.speaker_analysis.total_speakers).toBeGreaterThan(0);
-      expect(response.metadata.provider).toBe('speaker-emotion');
-      expect(response.metadata.analysis_type).toBe('speaker-identification');
+      expect(response.metadata?.provider).toBe('speaker-emotion');
+      expect(response.metadata?.analysis_type).toBe('speaker-identification');
       expect(response.finishReason).toBe('completed');
     });
 
@@ -187,7 +187,7 @@ describe('Audio Processing Providers', () => {
       expect(response.content.emotion_analysis.emotions).toBeInstanceOf(Array);
       expect(response.content.emotion_analysis.dominant_emotion).toBeDefined();
       expect(response.content.emotion_analysis.confidence).toBeGreaterThan(0);
-      expect(response.metadata.analysis_type).toBe('emotion-detection');
+      expect(response.metadata?.analysis_type).toBe('emotion-detection');
     });
 
     it('should execute noise reduction', async () => {
@@ -202,8 +202,8 @@ describe('Audio Processing Providers', () => {
       expect(response.content.enhanced_audio).toBeDefined();
       expect(response.content.quality_metrics).toBeDefined();
       expect(response.content.enhancement_type).toBe('noise-reduction');
-      expect(response.metadata.provider).toBe('audio-enhancement');
-      expect(response.metadata.enhancement_type).toBe('noise-reduction');
+      expect(response.metadata?.provider).toBe('audio-enhancement');
+      expect(response.metadata?.enhancement_type).toBe('noise-reduction');
     });
 
     it('should execute speech enhancement', async () => {
@@ -218,7 +218,7 @@ describe('Audio Processing Providers', () => {
       expect(response.content.enhanced_audio).toBeDefined();
       expect(response.content.quality_metrics).toBeDefined();
       expect(response.content.enhancement_type).toBe('speech-enhancement');
-      expect(response.metadata.enhancement_type).toBe('speech-enhancement');
+      expect(response.metadata?.enhancement_type).toBe('speech-enhancement');
     });
 
     it('should execute real-time transcription', async () => {
@@ -232,9 +232,9 @@ describe('Audio Processing Providers', () => {
       
       expect(response.content.streaming_result).toBeDefined();
       expect(response.content.streaming_type).toBe('real-time-transcription');
-      expect(response.metadata.provider).toBe('real-time-audio');
-      expect(response.metadata.streaming_type).toBe('real-time-transcription');
-      expect(response.metadata.real_time).toBe(true);
+      expect(response.metadata?.provider).toBe('real-time-audio');
+      expect(response.metadata?.streaming_type).toBe('real-time-transcription');
+      expect(response.metadata?.real_time).toBe(true);
     });
 
     it('should execute real-time enhancement', async () => {
@@ -248,7 +248,7 @@ describe('Audio Processing Providers', () => {
       
       expect(response.content.streaming_result).toBeDefined();
       expect(response.content.streaming_type).toBe('real-time-enhancement');
-      expect(response.metadata.streaming_type).toBe('real-time-enhancement');
+      expect(response.metadata?.streaming_type).toBe('real-time-enhancement');
     });
   });
 

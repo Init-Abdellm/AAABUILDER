@@ -1,5 +1,4 @@
-@agent 
-coder-helper v1
+@agent coder-helper v1
 trigger http POST /code-help
 secret OLLAMA_URL=env:OLLAMA_URL
 var task = input.task
@@ -7,7 +6,7 @@ var language = input.language
 
 step assist:
   kind llm
-  model qwen2.5-coder:1.5b
+  model llama3
   provider ollama
   prompt """
     You are a concise senior code assistant.
@@ -25,9 +24,5 @@ step assist:
   timeout_ms 45000
   save answer
 
-output {
-  task: task,
-  language: language,
-  answer: answer
-}
+output answer
 @end

@@ -250,7 +250,7 @@ export abstract class ModelProvider {
   /**
    * Estimate cost for a request (optional)
    */
-  async estimateCost(request: ModelRequest): Promise<number | null> {
+  async estimateCost(_request: ModelRequest): Promise<number | null> {
     // Default implementation returns null (cost estimation not available)
     return null;
   }

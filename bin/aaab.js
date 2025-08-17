@@ -41,7 +41,7 @@ program
       }
 
       logger.info(`Running agent file: ${file}`);
-      
+
       if (!fs.existsSync(file)) {
         logger.error(`File not found: ${file}`);
         process.exit(1);
@@ -49,7 +49,7 @@ program
 
       const content = fs.readFileSync(file, 'utf8');
       const ast = parser.parse(content);
-      
+
       // Validate the agent
       try {
         await validator.validate(ast);
@@ -58,6 +58,7 @@ program
         // Continue execution even with validation warnings
       }
 
+      logger.debug(`Input string: "${options.input}"`);
       const input = JSON.parse(options.input);
 
       // Execution options forwarded to providers via context
@@ -76,10 +77,11 @@ program
       }
 
       const result = await orchestrator.execute(ast, input, execOptions);
-      
+
       logger.info(chalk.green('Execution completed successfully'));
       if (result) {
-        console.log(JSON.stringify(result, null, 2));
+        // Use process.stdout directly to avoid conflicts with custom console wrapper
+        process.stdout.write(JSON.stringify(result, null, 2) + '\n');
       }
     } catch (error) {
       logger.error(`Execution failed: ${error.message}`);
@@ -97,7 +99,7 @@ program
   .action((file) => {
     try {
       logger.info(`Validating: ${file}`);
-      
+
       if (!fs.existsSync(file)) {
         logger.error(`File not found: ${file}`);
         process.exit(1);
@@ -127,7 +129,7 @@ program
   .action((file) => {
     try {
       logger.info(`Linting: ${file}`);
-      
+
       if (!fs.existsSync(file)) {
         logger.error(`File not found: ${file}`);
         process.exit(1);
@@ -159,7 +161,7 @@ program
   .action((file, options) => {
     try {
       logger.info(`Fixing: ${file}`);
-      
+
       if (!fs.existsSync(file)) {
         logger.error(`File not found: ${file}`);
         process.exit(1);
@@ -168,12 +170,12 @@ program
       const content = fs.readFileSync(file, 'utf8');
       const ast = parser.parse(content);
       const fixed = corrector.correct(ast);
-      
+
       const outputFile = options.output || file.replace(/\.agent$/, '.fixed.agent');
       const fixedContent = corrector.serialize(fixed.ast);
-      
+
       fs.writeFileSync(outputFile, fixedContent);
-      
+
       logger.info(chalk.green(`✓ Fixed file written to: ${outputFile}`));
       if (fixed.changes.length > 0) {
         logger.info('Applied fixes:');
@@ -193,7 +195,7 @@ program
   .action((name, options) => {
     try {
       const filename = `${name}.agent`;
-      
+
       if (fs.existsSync(filename)) {
         logger.error(`File already exists: ${filename}`);
         process.exit(1);
@@ -267,7 +269,7 @@ program
   .action((options) => {
     try {
       const files = list.findAgentFiles('.', options.recursive);
-      
+
       if (files.length === 0) {
         logger.info('No .agent files found');
       } else {
@@ -294,7 +296,7 @@ program
       const content = fs.readFileSync(file, 'utf8');
       const ast = parser.parse(content);
       const explanation = explain.explainAgent(ast);
-      
+
       console.log(explanation);
     } catch (error) {
       logger.error(`Explain error: ${error.message}`);
@@ -305,11 +307,11 @@ program
 program
   .command('doctor')
   .description('Check environment and dependencies')
-  .action(() => {
+  .action(async () => {
     try {
-      const results = doctor.checkEnvironment();
+      const results = await doctor.checkEnvironment();
       doctor.printResults(results);
-      
+
       const hasErrors = results.some(result => !result.status);
       if (hasErrors) {
         process.exit(1);
@@ -332,18 +334,18 @@ program
   .option('--recommend <task>', 'Get model recommendations for a specific task')
   .action(async (options) => {
     try {
-      const ModelManager = require('../src/core/ModelManager').ModelManager;
+      const { ModelManager } = require('../dist/src/core/ModelManager');
       const modelManager = ModelManager.getInstance();
-      
+
       if (options.list) {
         const stats = modelManager.getModelStatistics();
         console.header('AI/ML Model Statistics');
         console.info(`Total Models: ${stats.total}`);
-        
+
         Object.entries(stats.byType).forEach(([type, count]) => {
           console.info(`${type}: ${count} models`);
         });
-        
+
         console.endSection();
       } else if (options.recommend) {
         const recommendations = modelManager.getRecommendedModels(options.recommend);
@@ -357,7 +359,7 @@ program
         console.endSection();
       } else {
         let models = Array.from(modelManager['models'].values());
-        
+
         if (options.type) {
           models = models.filter(m => m.type === options.type);
         }
@@ -369,12 +371,12 @@ program
         }
         if (options.search) {
           const query = options.search.toLowerCase();
-          models = models.filter(m => 
-            m.name.toLowerCase().includes(query) || 
+          models = models.filter(m =>
+            m.name.toLowerCase().includes(query) ||
             m.metadata.description?.toLowerCase().includes(query)
           );
         }
-        
+
         console.header('Available AI/ML Models');
         models.forEach(model => {
           console.info(`${model.name} (${model.id})`);
@@ -403,46 +405,46 @@ program
   .action(async (options) => {
     try {
       const FineTuneProvider = require('../lib/providers/finetune');
-      
+
       console.header('Model Fine-tuning Management');
-      
+
       const provider = new FineTuneProvider(options.provider);
-      
+
       // Initialize provider
       const apiKey = process.env[`${options.provider.toUpperCase()}_API_KEY`];
       if (!apiKey) {
         console.error(`No API key found for ${options.provider}. Set ${options.provider.toUpperCase()}_API_KEY environment variable.`);
         process.exit(1);
       }
-      
+
       await provider.initialize({ apiKey });
-      
+
       if (options.create) {
         console.info(`Creating fine-tuning job for model: ${options.create}`);
-        
+
         if (!options.data) {
           console.error('Training data file is required. Use --data <file>');
           process.exit(1);
         }
-        
+
         const config = {
           model: options.create,
           trainingFile: options.data,
           hyperparameters: options.hyperparameters ? JSON.parse(options.hyperparameters) : {}
         };
-        
+
         const job = await provider.createFineTuneJob(config);
         console.success('Fine-tuning job created successfully');
         console.json(job, 'Job Details');
-        
+
       } else if (options.list) {
         console.info('Listing fine-tuning jobs...');
         const jobs = await provider.listFineTuneJobs();
-        
+
         if (jobs.length === 0) {
           console.info('No fine-tuning jobs found');
         } else {
-          console.table(['ID', 'Status', 'Model', 'Created'], 
+          console.table(['ID', 'Status', 'Model', 'Created'],
             jobs.map(job => [
               job.id,
               job.status,
@@ -451,23 +453,23 @@ program
             ])
           );
         }
-        
+
       } else if (options.status) {
         console.info(`Getting status for job: ${options.status}`);
         const status = await provider.getFineTuneStatus(options.status);
         console.json(status, 'Job Status');
-        
+
       } else if (options.cancel) {
         console.info(`Cancelling job: ${options.cancel}`);
         const result = await provider.cancelFineTuneJob(options.cancel);
         console.success('Job cancelled successfully');
         console.json(result, 'Cancellation Result');
-        
+
       } else if (options.data) {
         console.info(`Validating training data: ${options.data}`);
         const format = path.extname(options.data).substring(1);
         const validation = provider.validateTrainingData(options.data, format);
-        
+
         if (validation.valid) {
           console.success('Training data is valid');
           console.info(`Total lines: ${validation.totalLines}`);
@@ -477,11 +479,11 @@ program
           validation.errors.forEach(error => console.error(`  ${error}`));
           process.exit(1);
         }
-        
+
       } else {
         console.info('Use --help to see available options');
       }
-      
+
       console.endSection();
     } catch (error) {
       console.error(`Fine-tuning error: ${error.message}`);
@@ -501,48 +503,48 @@ program
   .action(async (options) => {
     try {
       const visionProvider = require('../lib/providers/vision');
-      
+
       console.header('Computer Vision Operations');
-      
+
       if (!options.classify && !options.detect && !options.ocr && !options.caption) {
         console.error('Please specify an operation: --classify, --detect, --ocr, or --caption');
         process.exit(1);
       }
-      
+
       const imagePath = options.classify || options.detect || options.ocr || options.caption;
       const model = options.model || (options.provider === 'openai' ? 'gpt-4o-vision' : 'microsoft/DialoGPT-large');
-      
+
       // Check if image file exists
       if (!fs.existsSync(imagePath)) {
         console.error(`Image file not found: ${imagePath}`);
         process.exit(1);
       }
-      
+
       if (options.classify) {
         console.info(`Classifying image: ${imagePath}`);
         const result = await visionProvider.operations.classify(model, imagePath);
         console.success('Classification completed');
         console.json(result, 'Classification Result');
-        
+
       } else if (options.detect) {
         console.info(`Detecting objects in: ${imagePath}`);
         const result = await visionProvider.operations.analyze(model, imagePath);
         console.success('Object detection completed');
         console.json(result, 'Detection Result');
-        
+
       } else if (options.ocr) {
         console.info(`Extracting text from: ${imagePath}`);
         const result = await visionProvider.operations.analyze(model, imagePath);
         console.success('OCR completed');
         console.json(result, 'OCR Result');
-        
+
       } else if (options.caption) {
         console.info(`Generating caption for: ${imagePath}`);
         const result = await visionProvider.operations.caption(model, imagePath);
         console.success('Caption generation completed');
         console.json(result, 'Caption Result');
       }
-      
+
       console.endSection();
     } catch (error) {
       console.error(`Vision error: ${error.message}`);
@@ -561,43 +563,43 @@ program
   .action(async (options) => {
     try {
       const audioProvider = require('../lib/providers/audio');
-      
+
       console.header('Audio Processing Operations');
-      
+
       if (!options.stt && !options.tts) {
         console.error('Please specify an operation: --stt or --tts');
         process.exit(1);
       }
-      
+
       if (options.stt) {
         console.info(`Converting speech to text: ${options.stt}`);
-        
+
         if (!fs.existsSync(options.stt)) {
           console.error(`Audio file not found: ${options.stt}`);
           process.exit(1);
         }
-        
+
         const result = await audioProvider.operations.stt(options.stt, {
           model: options.model || 'whisper-1'
         });
-        
+
         console.success('Speech-to-text completed');
         console.json(result, 'Transcription Result');
-        
+
       } else if (options.tts) {
         console.info(`Converting text to speech: "${options.tts}"`);
-        
+
         const result = await audioProvider.operations.tts(options.tts, {
           model: options.model || 'tts-1',
           voice: options.voice || 'alloy',
           outputPath: options.output
         });
-        
+
         console.success('Text-to-speech completed');
         console.json(result, 'TTS Result');
         console.info(`Audio saved to: ${result.outputPath}`);
       }
-      
+
       console.endSection();
     } catch (error) {
       console.error(`Audio error: ${error.message}`);
@@ -615,59 +617,59 @@ program
   .action(async (options) => {
     try {
       console.header('Machine Learning Operations');
-      
+
       if (options.train) {
         console.info(`Training ML model with config: ${options.train}`);
-        
+
         if (!fs.existsSync(options.train)) {
           console.error(`Config file not found: ${options.train}`);
           process.exit(1);
         }
-        
+
         const config = JSON.parse(fs.readFileSync(options.train, 'utf8'));
         console.info('Training configuration loaded');
         console.json(config, 'Training Config');
-        
+
         // This would integrate with actual ML training frameworks
         console.warn('ML training requires integration with frameworks like TensorFlow, PyTorch, or scikit-learn');
         console.info('Consider using the fine-tuning command for model customization instead');
-        
+
       } else if (options.predict) {
         const [model, data] = options.predict.split(' ');
         console.info(`Making predictions with model: ${model}`);
-        
+
         if (!fs.existsSync(data)) {
           console.error(`Data file not found: ${data}`);
           process.exit(1);
         }
-        
+
         console.warn('ML prediction requires integration with trained model files');
         console.info('Consider using the LLM providers for text-based predictions');
-        
+
       } else if (options.evaluate) {
         const [model, data] = options.evaluate.split(' ');
         console.info(`Evaluating model: ${model}`);
-        
+
         if (!fs.existsSync(data)) {
           console.error(`Data file not found: ${data}`);
           process.exit(1);
         }
-        
+
         console.warn('ML evaluation requires integration with trained model files');
-        
+
       } else if (options.export) {
         const [model, format] = options.export.split(' ');
         console.info(`Exporting model ${model} to ${format} format`);
-        
+
         console.warn('ML export requires integration with trained model files');
         console.info('Supported formats: ONNX, TensorFlow SavedModel, PyTorch, scikit-learn pickle');
-        
+
       } else {
         console.info('Use --help to see available options');
         console.info('Note: Full ML operations require integration with ML frameworks');
         console.info('For AI model operations, use: fine-tune, vision, audio commands');
       }
-      
+
       console.endSection();
     } catch (error) {
       console.error(`ML error: ${error.message}`);
@@ -687,24 +689,24 @@ program
   .action(async (options) => {
     try {
       const VectorDBProvider = require('../lib/providers/vectordb');
-      
+
       console.header('Vector Database Operations');
-      
+
       if (!options.create && !options.list && !options.add && !options.search && !options.delete) {
         console.error('Please specify an operation: --create, --list, --add, --search, or --delete');
         process.exit(1);
       }
-      
+
       const backend = options.backend;
       const apiKey = process.env[`${backend.toUpperCase()}_API_KEY`];
-      
+
       if (!apiKey) {
         console.error(`No API key found for ${backend}. Set ${backend.toUpperCase()}_API_KEY environment variable.`);
         process.exit(1);
       }
-      
+
       const vectorDB = new VectorDBProvider(backend);
-      
+
       try {
         await vectorDB.initialize({ apiKey });
         console.success(`Connected to ${backend} vector database`);
@@ -712,51 +714,51 @@ program
         console.error(`Failed to connect to ${backend}: ${error.message}`);
         process.exit(1);
       }
-      
+
       if (options.create) {
         console.info(`Creating vector database: ${options.create}`);
         const result = await vectorDB.createCollection(options.create);
         console.success('Vector database created successfully');
         console.json(result, 'Database Info');
-        
+
       } else if (options.list) {
         console.info('Listing vector databases...');
         console.warn('Collection listing depends on the specific backend implementation');
         console.info(`Using backend: ${backend}`);
-        
+
       } else if (options.add) {
         const [db, collection, data] = options.add.split(' ');
         console.info(`Adding documents to ${db}/${collection}`);
-        
+
         if (!fs.existsSync(data)) {
           console.error(`Data file not found: ${data}`);
           process.exit(1);
         }
-        
+
         const documents = JSON.parse(fs.readFileSync(data, 'utf8'));
         console.info(`Loaded ${documents.length} documents`);
-        
+
         // This would require embeddings to be generated first
         console.warn('Document addition requires pre-generated embeddings');
         console.info('Consider using OpenAI embeddings or similar service first');
-        
+
       } else if (options.search) {
         const [db, collection, query] = options.search.split(' ');
         console.info(`Searching in ${db}/${collection}: ${query}`);
-        
+
         // This would require query embeddings to be generated first
         console.warn('Vector search requires query embeddings');
         console.info('Consider using OpenAI embeddings or similar service first');
-        
+
       } else if (options.delete) {
         const [db, collection] = options.delete.split(' ');
         console.info(`Deleting collection: ${db}/${collection}`);
-        
+
         const result = await vectorDB.deleteCollection(collection);
         console.success('Collection deleted successfully');
         console.json(result, 'Deletion Result');
       }
-      
+
       console.endSection();
     } catch (error) {
       console.error(`Vector DB error: ${error.message}`);
@@ -837,22 +839,22 @@ program
       apiKeys: useExpress ? (options.apiKey || []) : undefined,
       jwtSecret: useExpress ? (options.jwtSecret || process.env.AAAB_JWT_SECRET) : undefined,
     });
-    
+
     try {
       await server.start();
-      
+
       if (options.watch && server.loadAgents) {
         const chokidar = require('chokidar');
         const watcher = chokidar.watch(options.agentsDir + '/*.agent');
-        
+
         watcher.on('change', () => {
           console.info('Agent files changed, reloading...');
           server.loadAgents();
         });
-        
+
         console.info('File watching enabled');
       }
-      
+
       // Handle graceful shutdown
       process.on('SIGINT', async () => {
         console.info('Shutting down server...');
@@ -875,11 +877,11 @@ program
   .option('--replicas <count>', 'Number of replicas', '2')
   .action(async (strategy, options) => {
     const AABBDeployer = require('../lib/deployment/deployer');
-    
+
     try {
       const deployer = new AABBDeployer();
       const result = await deployer.deploy(strategy, options);
-      
+
       console.success(`Deployment preparation complete!`);
       console.json(result, 'Deployment Result');
     } catch (error) {
@@ -903,19 +905,19 @@ function listTemplates() {
     .map(dirent => dirent.name);
 
   console.section('Template Categories');
-  
+
   categories.forEach(category => {
     console.info(`📁 ${category.toUpperCase()}`);
     const categoryPath = path.join(templatesDir, category);
     const templates = fs.readdirSync(categoryPath)
       .filter(file => file.endsWith('.agent'))
       .map(file => file.replace('.agent', ''));
-    
+
     templates.forEach(template => {
       console.info(`   └─ ${template}`);
     });
   });
-  
+
   console.endSection();
   console.info('Usage: aaab template <category>/<template> [output-file]');
 }
@@ -923,7 +925,7 @@ function listTemplates() {
 function createFromTemplate(templateName, outputFile) {
   const templatesDir = path.join(__dirname, '../templates');
   let templatePath;
-  
+
   // Handle category/template format
   if (templateName.includes('/')) {
     templatePath = path.join(templatesDir, templateName + '.agent');
@@ -932,7 +934,7 @@ function createFromTemplate(templateName, outputFile) {
     const categories = fs.readdirSync(templatesDir, { withFileTypes: true })
       .filter(dirent => dirent.isDirectory())
       .map(dirent => dirent.name);
-    
+
     for (const category of categories) {
       const possiblePath = path.join(templatesDir, category, templateName + '.agent');
       if (fs.existsSync(possiblePath)) {
@@ -941,21 +943,21 @@ function createFromTemplate(templateName, outputFile) {
       }
     }
   }
-  
+
   if (!templatePath || !fs.existsSync(templatePath)) {
     console.error(`Template '${templateName}' not found`);
     return;
   }
-  
+
   const outputPath = outputFile || `${templateName.split('/').pop()}.agent`;
-  
+
   console.header('Creating Agent from Template', `Template: ${templateName}`);
   console.info(`Source: ${templatePath}`);
   console.info(`Output: ${outputPath}`);
-  
+
   const content = fs.readFileSync(templatePath, 'utf8');
   fs.writeFileSync(outputPath, content);
-  
+
   console.success(`Agent created: ${outputPath}`);
   console.info('Next steps:');
   console.info('1. Edit the agent file to customize for your needs');
@@ -967,22 +969,22 @@ function createFromTemplate(templateName, outputFile) {
 function initProject(name, options) {
   const projectName = name || 'my-agent-project';
   const projectDir = path.join(process.cwd(), projectName);
-  
+
   console.header('Initializing Agent Project', `Project: ${projectName}`);
-  
+
   if (fs.existsSync(projectDir)) {
     console.error(`Directory '${projectName}' already exists`);
     return;
   }
-  
+
   fs.mkdirSync(projectDir, { recursive: true });
-  
+
   // Create project structure
   const dirs = ['agents', 'examples', 'tests', 'config'];
   dirs.forEach(dir => {
     fs.mkdirSync(path.join(projectDir, dir), { recursive: true });
   });
-  
+
   // Create package.json
   const packageJson = {
     name: projectName,
@@ -1008,27 +1010,27 @@ function initProject(name, options) {
       port: options.port || 5000
     }
   };
-  
+
   fs.writeFileSync(
-    path.join(projectDir, 'package.json'), 
+    path.join(projectDir, 'package.json'),
     JSON.stringify(packageJson, null, 2)
   );
-  
+
   // Create default agent files
   createDefaultAgents(projectDir, options);
-  
+
   // Create configuration files
   createConfigFiles(projectDir, options);
-  
+
   // Create README
   const readme = createProjectReadme(projectName, options);
   fs.writeFileSync(path.join(projectDir, 'README.md'), readme);
-  
+
   // Copy a starter template if specified
   if (options.template) {
     createFromTemplate(options.template, path.join(projectDir, 'agents', 'starter.agent'));
   }
-  
+
   console.success(`Project created: ${projectDir}`);
   console.info('Next steps:');
   console.info(`1. cd ${projectName}`);
@@ -1042,7 +1044,7 @@ function initProject(name, options) {
 function createDefaultAgents(projectDir, options) {
   const provider = options.provider || 'openai';
   const model = options.model || 'gpt-4o';
-  
+
   // Chat agent
   const chatAgent = `@agent chat v1
 description: "Simple chat agent for conversations"
@@ -1194,7 +1196,7 @@ outputs:
   fs.writeFileSync(path.join(projectDir, 'agents', 'global-prompt.agent'), globalPromptAgent);
   fs.writeFileSync(path.join(projectDir, 'agents', 'kb.agent'), kbAgent);
   fs.writeFileSync(path.join(projectDir, 'agents', 'settings.agent'), settingsAgent);
-  
+
   console.success('Created default agent files:');
   console.info('  • agents/chat.agent - Simple chat agent');
   console.info('  • agents/global-prompt.agent - Agent with system prompt');
@@ -1225,9 +1227,9 @@ NODE_ENV=development
 # AWS_SECRETS_SECRET_KEY=your-aws-secret
 # GCP_PROJECT_ID=your-gcp-project
 `;
-  
+
   fs.writeFileSync(path.join(projectDir, '.env.example'), envExample);
-  
+
   // Create .gitignore
   const gitignore = `# Dependencies
 node_modules/
@@ -1261,9 +1263,9 @@ Thumbs.db
 dist/
 build/
 `;
-  
+
   fs.writeFileSync(path.join(projectDir, '.gitignore'), gitignore);
-  
+
   // Create aaab.config.js
   const config = `module.exports = {
   // Server configuration
@@ -1295,9 +1297,9 @@ build/
   }
 };
 `;
-  
+
   fs.writeFileSync(path.join(projectDir, 'aaab.config.js'), config);
-  
+
   console.success('Created configuration files:');
   console.info('  • .env.example - Environment variables template');
   console.info('  • .gitignore - Git ignore rules');
@@ -1308,7 +1310,7 @@ function createProjectReadme(projectName, options) {
   const provider = options.provider || 'openai';
   const model = options.model || 'gpt-4o';
   const port = options.port || 5000;
-  
+
   return `# ${projectName}
 
 AAAB Agent Project - AI-powered backend services
@@ -1477,10 +1479,10 @@ Built with ❤️ using AAAB (Agent as a Backend)
 
 function listWorkspaceAgents() {
   console.header('Workspace Agents');
-  
+
   const agentFiles = [];
   const searchDirs = ['.', 'agents', 'examples'];
-  
+
   searchDirs.forEach(dir => {
     if (fs.existsSync(dir)) {
       const files = fs.readdirSync(dir)
@@ -1489,14 +1491,14 @@ function listWorkspaceAgents() {
       agentFiles.push(...files);
     }
   });
-  
+
   if (agentFiles.length === 0) {
     console.warn('No .agent files found in workspace');
     console.info('Create one with: aaab template <template-name> my-agent.agent');
     return;
   }
-  
-  console.table(['File', 'Size', 'Modified'], 
+
+  console.table(['File', 'Size', 'Modified'],
     agentFiles.map(file => {
       const stats = fs.statSync(file);
       return [
@@ -1506,40 +1508,40 @@ function listWorkspaceAgents() {
       ];
     })
   );
-  
+
   console.endSection();
 }
 
 function showWorkspaceStats() {
   console.header('Workspace Statistics');
-  
+
   const stats = {
     'Agent Files': 0,
     'Total Size': 0,
     'Categories': new Set(),
     'Last Modified': null
   };
-  
+
   const searchDirs = ['.', 'agents', 'examples', 'templates'];
   let latestTime = 0;
-  
+
   searchDirs.forEach(dir => {
     if (fs.existsSync(dir)) {
       const files = fs.readdirSync(dir, { recursive: true })
         .filter(file => file.endsWith && file.endsWith('.agent'));
-      
+
       files.forEach(file => {
         const fullPath = path.join(dir, file);
         if (fs.existsSync(fullPath)) {
           const fileStat = fs.statSync(fullPath);
           stats['Agent Files']++;
           stats['Total Size'] += fileStat.size;
-          
+
           if (fileStat.mtime.getTime() > latestTime) {
             latestTime = fileStat.mtime.getTime();
             stats['Last Modified'] = fileStat.mtime.toLocaleString();
           }
-          
+
           // Determine category from path
           const pathParts = file.split('/');
           if (pathParts.length > 1) {
@@ -1549,20 +1551,20 @@ function showWorkspaceStats() {
       });
     }
   });
-  
+
   stats['Total Size'] = `${Math.round(stats['Total Size'] / 1024)}KB`;
   stats['Categories'] = stats['Categories'].size;
-  
+
   Object.entries(stats).forEach(([key, value]) => {
     console.info(`${key}: ${value}`);
   });
-  
+
   console.endSection();
 }
 
 function showWorkspaceOverview() {
   console.header('Agent Workspace Overview');
-  
+
   console.info('🚀 Welcome to your AAAB workspace!');
   console.info('');
   console.info('Available commands:');
@@ -1571,6 +1573,6 @@ function showWorkspaceOverview() {
   console.info('• aaab workspace --stats  - Show statistics');
   console.info('• aaab init <name>        - Create new project');
   console.info('• aaab run <file>         - Execute an agent');
-  
+
   console.endSection();
 }

@@ -467,7 +467,7 @@ export class WhisperProvider extends ModelProvider {
     return mockModel;
   }
 
-  private async preprocessAudio(input: any, model: any): Promise<any> {
+  private async preprocessAudio(input: any, _model: any): Promise<any> {
     // Mock audio preprocessing
     return {
       audio_data: input,

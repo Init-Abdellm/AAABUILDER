@@ -52,7 +52,8 @@ class MockProvider extends ModelProvider {
         metadata: {
           model_size: '25MB',
           complexity: 'medium',
-          accuracy: 0.85
+          accuracy: 0.85,
+          version: '1.0.0'
         },
         available: true
       },
@@ -66,7 +67,8 @@ class MockProvider extends ModelProvider {
         metadata: {
           model_size: '150MB',
           complexity: 'very-high',
-          accuracy: 0.95
+          accuracy: 0.95,
+          version: '1.0.0'
         },
         available: true
       }

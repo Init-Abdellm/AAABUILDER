@@ -74,7 +74,9 @@ export type ModelCapability =
   | 'mathematical-reasoning' | 'logical-reasoning'
   | 'multimodal' | 'streaming' | 'fine-tuning'
   | 'reinforcement-learning' | 'graph-processing'
-  | 'time-series' | 'anomaly-detection' | 'recommendation';
+  | 'time-series' | 'anomaly-detection' | 'recommendation'
+  | 'image-captioning' | 'language-detection' | 'text-classification'
+  | 'clustering' | 'dimensionality-reduction' | 'feature-selection';
 
 export interface ModelParameters {
   maxTokens?: number;

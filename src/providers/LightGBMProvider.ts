@@ -5,7 +5,9 @@ import {
   ModelCapabilities, 
   ModelInfo, 
   ValidationResult,
-  ModelConfig
+  ModelConfig,
+  ValidationError,
+  ValidationWarning
 } from './ModelProvider';
 import { ModelType } from '../types/global';
 
@@ -14,27 +16,26 @@ import { ModelType } from '../types/global';
  * Supports fast gradient boosting models via Python bridge
  */
 export class LightGBMProvider extends ModelProvider {
-  private pythonBridge: any;
 
   constructor(config: Record<string, any> = {}) {
     super('lightgbm', 'gradient-boosting', {
-      pythonPath: config.pythonPath || 'python',
-      timeout: config.timeout || 45000,
-      maxConcurrency: config.maxConcurrency || 3,
-      enableGPU: config.enableGPU || false,
-      verbosity: config.verbosity || -1,
+      pythonPath: config['pythonPath'] || 'python',
+      timeout: config['timeout'] || 45000,
+      maxConcurrency: config['maxConcurrency'] || 3,
+      enableGPU: config['enableGPU'] || false,
+      verbosity: config['verbosity'] || -1,
       ...config
     });
   }
 
-  supports(modelType: ModelType): boolean {
+  override supports(modelType: ModelType): boolean {
     const supportedTypes: ModelType[] = [
       'MLP', 'Transformer' // LightGBM can be used as base for various architectures
     ];
     return supportedTypes.includes(modelType);
   }
 
-  async execute(request: ModelRequest): Promise<ModelResponse> {
+  override async execute(request: ModelRequest): Promise<ModelResponse> {
     const startTime = Date.now();
     
     try {
@@ -49,9 +50,36 @@ export class LightGBMProvider extends ModelProvider {
       
       // Execute model
       const result = await this.executeLightGBMModel(lgbRequest);
-      
-      // Process response
-      const response = await this.processResponse(result, request);
+      // Build base ModelResponse and process
+      const baseResponse: ModelResponse = {
+        content: {
+          predictions: result.predictions,
+          probabilities: result.probabilities,
+          feature_importance: result.feature_importance,
+          metrics: result.model_metrics,
+          training_log: result.training_log,
+          model_info: result.model_info
+        },
+        model: request.model,
+        usage: {
+          inputSize: this.calculateInputSize(request.input),
+          outputSize: Array.isArray(result.predictions) ? result.predictions.length : 1,
+          duration: 0,
+          memoryUsage: this.estimateMemoryUsage(request.input)
+        },
+        finishReason: 'completed',
+        metadata: {
+          provider: this.name,
+          task_type: result.model_info.task_type,
+          objective: result.model_info.objective,
+          boosting_type: result.model_info.boosting_type,
+          n_features: result.model_info.n_features,
+          num_leaves: result.model_info.num_leaves,
+          best_iteration: result.model_info.best_iteration
+        }
+      };
+
+      const response = await this.processResponse(baseResponse);
       
       const duration = Date.now() - startTime;
       
@@ -68,16 +96,13 @@ export class LightGBMProvider extends ModelProvider {
     }
   }
 
-  getCapabilities(): ModelCapabilities {
+  override getCapabilities(): ModelCapabilities {
     return {
       supportedTypes: ['MLP', 'Transformer'],
       capabilities: [
-        'classification',
-        'regression',
-        'ranking',
+        'text-classification',
         'anomaly-detection',
-        'feature-selection',
-        'early-stopping'
+        'feature-selection'
       ],
       maxInputSize: 50000000, // 50M features (LightGBM is very memory efficient)
       maxOutputSize: 1000000,
@@ -85,14 +110,14 @@ export class LightGBMProvider extends ModelProvider {
       fineTuning: true,
       multimodal: false,
       batchProcessing: true,
-      gpuAcceleration: this.config.enableGPU,
+      gpuAcceleration: this.config['enableGPU'],
       memoryEfficient: true
     };
   }
 
-  validateConfig(config: ModelConfig): ValidationResult {
-    const errors = [];
-    const warnings = [];
+  override validateConfig(config: ModelConfig): ValidationResult {
+    const errors: ValidationError[] = [];
+    const warnings: ValidationWarning[] = [];
 
     // Validate model name
     if (!config.model) {
@@ -115,7 +140,7 @@ export class LightGBMProvider extends ModelProvider {
     };
   }
 
-  async listModels(): Promise<ModelInfo[]> {
+  override async listModels(): Promise<ModelInfo[]> {
     const models: ModelInfo[] = [
       // Classification Models
       {
@@ -250,7 +275,7 @@ export class LightGBMProvider extends ModelProvider {
       },
 
       // GPU-Accelerated Models (if enabled)
-      ...(this.config.enableGPU ? [{
+      ...(this.config['enableGPU'] ? [{
         id: 'lightgbm-gpu-classifier',
         name: 'LightGBM GPU Classifier',
         type: 'MLP' as ModelType,
@@ -280,12 +305,12 @@ export class LightGBMProvider extends ModelProvider {
     return models;
   }
 
-  async getModelInfo(modelId: string): Promise<ModelInfo | null> {
+  override async getModelInfo(modelId: string): Promise<ModelInfo | null> {
     const models = await this.listModels();
     return models.find(m => m.id === modelId) || null;
   }
 
-  async isAvailable(): Promise<boolean> {
+  override async isAvailable(): Promise<boolean> {
     try {
       // Check if Python and LightGBM are available
       const result = await this.executePythonCommand([
@@ -298,7 +323,7 @@ export class LightGBMProvider extends ModelProvider {
     }
   }
 
-  async initialize(): Promise<void> {
+  override async initialize(): Promise<void> {
     try {
       // Initialize Python bridge
       await this.initializePythonBridge();
@@ -310,7 +335,7 @@ export class LightGBMProvider extends ModelProvider {
       }
 
       // Check GPU availability if enabled
-      if (this.config.enableGPU) {
+      if (this.config['enableGPU']) {
         await this.checkGPUAvailability();
       }
 
@@ -373,7 +398,7 @@ export class LightGBMProvider extends ModelProvider {
         feature_fraction: 0.9,
         bagging_fraction: 0.8,
         bagging_freq: 5,
-        verbose: this.config.verbosity,
+        verbose: this.config['verbosity'],
         ...request.parameters
       },
       task: this.inferTaskType(request.model)
@@ -509,34 +534,8 @@ export class LightGBMProvider extends ModelProvider {
     return 1;
   }
 
-  protected async processResponse(result: any, request: ModelRequest): Promise<ModelResponse> {
-    return {
-      content: {
-        predictions: result.predictions,
-        probabilities: result.probabilities,
-        feature_importance: result.feature_importance,
-        metrics: result.model_metrics,
-        training_log: result.training_log,
-        model_info: result.model_info
-      },
-      model: request.model,
-      usage: {
-        inputSize: this.calculateInputSize(request.input),
-        outputSize: result.predictions.length,
-        processingTime: 0, // Will be set by caller
-        memoryUsage: this.estimateMemoryUsage(request.input)
-      },
-      finishReason: 'completed',
-      metadata: {
-        provider: this.name,
-        task_type: result.model_info.task_type,
-        objective: result.model_info.objective,
-        boosting_type: result.model_info.boosting_type,
-        n_features: result.model_info.n_features,
-        num_leaves: result.model_info.num_leaves,
-        best_iteration: result.model_info.best_iteration
-      }
-    };
+  protected override async processResponse(response: ModelResponse): Promise<ModelResponse> {
+    return response;
   }
 
   private calculateInputSize(input: any): number {
@@ -623,14 +622,10 @@ export class LightGBMProvider extends ModelProvider {
 
   private async initializePythonBridge(): Promise<void> {
     // Initialize Python bridge (mock implementation)
-    this.pythonBridge = {
-      initialized: true,
-      version: '3.8+',
-      lightgbm_version: '4.1.0'
-    };
+    // Bridge initialization completed
   }
 
-  private async executePythonCommand(args: string[]): Promise<{ success: boolean; output?: string; error?: string }> {
+  private async executePythonCommand(_args: string[]): Promise<{ success: boolean; output?: string; error?: string }> {
     // Mock Python command execution
     return {
       success: true,
@@ -640,16 +635,16 @@ export class LightGBMProvider extends ModelProvider {
 
   private async checkGPUAvailability(): Promise<void> {
     try {
-      const result = await this.executePythonCommand([
+      await this.executePythonCommand([
         '-c', 
         'import lightgbm as lgb; print("GPU available" if lgb.basic.LightGBMError else "GPU check failed")'
-      ]);
+    ]);
       
       // In a real implementation, this would check actual GPU availability
       console.log('GPU availability check completed');
     } catch (error) {
       console.warn('Could not check GPU availability:', error);
-      this.config.enableGPU = false;
+      this.config['enableGPU'] = false;
     }
   }
 }

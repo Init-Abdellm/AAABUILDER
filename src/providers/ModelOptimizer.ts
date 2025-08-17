@@ -1,4 +1,4 @@
-import { ModelProvider, ModelInfo, ModelRequest, ModelResponse } from './ModelProvider';
+import { ModelInfo, ModelRequest, ModelResponse } from './ModelProvider';
 import { ModelRegistry } from './ModelRegistry';
 
 /**
@@ -122,7 +122,7 @@ export class ModelOptimizer {
     this.config = config;
     
     // Initialize cache cleanup if caching is enabled
-    if (config.caching?.enabled) {
+    if (this.config.caching?.enabled) {
       this.startCacheCleanup();
     }
   }
@@ -226,12 +226,26 @@ export class ModelOptimizer {
     }
 
     const recommended: OptimizationStrategy[] = [];
-    const reasons: Record<OptimizationStrategy, string> = {};
-    const estimatedImprovements: Record<OptimizationStrategy, any> = {};
+    const reasons: Record<OptimizationStrategy, string> = {
+      quantization: '',
+      pruning: '',
+      distillation: '',
+      caching: '',
+      batching: '',
+      'gpu-acceleration': ''
+    };
+    const estimatedImprovements: Record<OptimizationStrategy, any> = {
+      quantization: undefined,
+      pruning: undefined,
+      distillation: undefined,
+      caching: undefined,
+      batching: undefined,
+      'gpu-acceleration': undefined
+    };
 
     // Analyze model characteristics
-    const modelSize = this.parseModelSize(model.metadata.model_size);
-    const complexity = model.metadata.complexity;
+    const modelSize = this.parseModelSize(model.metadata['model_size']);
+    const complexity = model.metadata['complexity'];
     const modelType = model.type;
 
     // Quantization recommendations
@@ -256,7 +270,7 @@ export class ModelOptimizer {
     }
 
     // Caching recommendations
-    if (model.capabilities.streaming || model.capabilities.realTime) {
+    if (model.capabilities['streaming'] || model.capabilities['realTime']) {
       recommended.push('caching');
       reasons['caching'] = 'Real-time models benefit from response caching';
       estimatedImprovements['caching'] = {
@@ -266,7 +280,7 @@ export class ModelOptimizer {
     }
 
     // Batching recommendations
-    if (model.capabilities.batchProcessing) {
+    if (model.capabilities['batchProcessing']) {
       recommended.push('batching');
       reasons['batching'] = 'Model supports batch processing for improved throughput';
       estimatedImprovements['batching'] = {
@@ -366,7 +380,7 @@ export class ModelOptimizer {
       ...model.metadata, 
       quantized: true,
       quantization_type: config.type,
-      model_size: this.reduceModelSize(model.metadata.model_size, 0.4) // 40% reduction
+      model_size: this.reduceModelSize(model.metadata['model_size'], 0.4) // 40% reduction
     };
 
     return {
@@ -389,7 +403,7 @@ export class ModelOptimizer {
       ...model.metadata, 
       pruned: true,
       sparsity_level: config.sparsityLevel,
-      model_size: this.reduceModelSize(model.metadata.model_size, reductionFactor)
+      model_size: this.reduceModelSize(model.metadata['model_size'], reductionFactor)
     };
 
     return {
@@ -410,7 +424,7 @@ export class ModelOptimizer {
       ...model.metadata, 
       distilled: true,
       teacher_model: config.teacherModel,
-      model_size: this.reduceModelSize(model.metadata.model_size, 0.6) // 60% reduction
+      model_size: this.reduceModelSize(model.metadata['model_size'], 0.6) // 60% reduction
     };
 
     return {
@@ -484,7 +498,7 @@ export class ModelOptimizer {
     };
   }
 
-  private async benchmarkModel(original: ModelInfo, optimized: ModelInfo): Promise<any> {
+  private async benchmarkModel(_original: ModelInfo, _optimized: ModelInfo): Promise<any> {
     // Mock benchmarking - in real implementation, this would run actual performance tests
     const baseLatency = 100; // ms
     const baseThroughput = 10; // requests/sec
@@ -501,7 +515,8 @@ export class ModelOptimizer {
   }
 
   private getCachedResponse(request: ModelRequest): ModelResponse | null {
-    if (!this.config.caching?.enabled) return null;
+    const caching = this.config.caching;
+    if (!caching?.enabled) return null;
 
     const cacheKey = this.generateCacheKey(request);
     const entry = this.modelCache.get(cacheKey);
@@ -510,7 +525,8 @@ export class ModelOptimizer {
 
     // Check TTL
     const now = Date.now();
-    if (now - entry.timestamp > (this.config.caching.ttl * 1000)) {
+    const ttlMs = (caching?.ttl ?? 0) * 1000;
+    if (ttlMs > 0 && now - entry.timestamp > ttlMs) {
       this.modelCache.delete(cacheKey);
       return null;
     }
@@ -525,18 +541,17 @@ export class ModelOptimizer {
   private async executeBatched(request: ModelRequest): Promise<ModelResponse> {
     return new Promise((resolve, reject) => {
       const modelId = request.model;
-      
+      if (!modelId) {
+        reject(new Error("Missing request.model for batching"));
+        return;
+      }
+
       if (!this.batchQueues.has(modelId)) {
         this.batchQueues.set(modelId, []);
       }
 
       const queue = this.batchQueues.get(modelId)!;
-      queue.push({
-        request,
-        resolve,
-        reject,
-        timestamp: Date.now()
-      });
+      queue.push({ request, resolve, reject, timestamp: Date.now() });
 
       // Process batch if it's full or set timer
       if (queue.length >= (this.config.batching?.maxBatchSize || 10)) {
@@ -545,7 +560,7 @@ export class ModelOptimizer {
         const timer = setTimeout(() => {
           this.processBatch(modelId);
         }, this.config.batching?.batchTimeout || 100);
-        
+
         this.batchTimers.set(modelId, timer);
       }
     });
@@ -564,20 +579,19 @@ export class ModelOptimizer {
 
     // Process all requests in batch
     const batch = queue.splice(0);
-    
+
     try {
-      // In real implementation, this would batch the requests to the model
       const responses = await Promise.all(
-        batch.map(entry => this.executeWithOptimizations(entry.request))
+        batch.map((entry) => this.executeWithOptimizations(entry.request))
       );
 
       // Resolve all promises
       batch.forEach((entry, index) => {
-        entry.resolve(responses[index]);
+        entry.resolve(responses[index]!);
       });
     } catch (error) {
       // Reject all promises
-      batch.forEach(entry => {
+      batch.forEach((entry) => {
         entry.reject(error instanceof Error ? error : new Error('Batch processing failed'));
       });
     }
@@ -586,8 +600,8 @@ export class ModelOptimizer {
   private async executeWithOptimizations(request: ModelRequest): Promise<ModelResponse> {
     // Get the appropriate provider and execute
     const models = await this.registry.listModels();
-    const targetModel = models.find(m => m.id === request.model);
-    
+    const targetModel = models.find((m) => m.id === request.model);
+
     if (!targetModel) {
       throw new Error(`Model '${request.model}' not found`);
     }
@@ -614,7 +628,7 @@ export class ModelOptimizer {
       response,
       timestamp: Date.now(),
       accessCount: 1,
-      lastAccessed: Date.now()
+      lastAccessed: Date.now(),
     };
 
     this.modelCache.set(cacheKey, entry);
@@ -628,19 +642,20 @@ export class ModelOptimizer {
     const keyData = {
       model: request.model,
       input: typeof request.input === 'string' ? request.input : JSON.stringify(request.input),
-      parameters: JSON.stringify(request.parameters || {})
+      parameters: JSON.stringify(request.parameters || {}),
     };
-    
+
     return Buffer.from(JSON.stringify(keyData)).toString('base64');
   }
 
   private enforceCacheLimit(): void {
-    const maxSize = this.config.caching?.maxCacheSize || 100; // MB
+    const caching = this.config.caching;
+    const maxSize = caching?.maxCacheSize || 100; // MB
     const currentSize = this.modelCache.size * 0.1; // Rough estimate
 
     if (currentSize > maxSize) {
       // Remove entries based on strategy
-      const strategy = this.config.caching?.strategy || 'lru';
+      const strategy = caching?.strategy || 'lru';
       const entries = Array.from(this.modelCache.entries());
 
       if (strategy === 'lru') {
@@ -653,9 +668,9 @@ export class ModelOptimizer {
 
       // Remove oldest 25% of entries
       const toRemove = Math.floor(entries.length * 0.25);
-      for (let i = 0; i < toRemove; i++) {
-        this.modelCache.delete(entries[i][0]);
-      }
+      entries.slice(0, toRemove).forEach(([key]) => {
+        this.modelCache.delete(key);
+      });
     }
   }
 
@@ -663,7 +678,7 @@ export class ModelOptimizer {
     // This would track actual cache hits/misses in a real implementation
     return {
       hitRate: Math.random() * 0.4 + 0.3, // Mock 30-70% hit rate
-      size: this.modelCache.size
+      size: this.modelCache.size,
     };
   }
 
@@ -676,44 +691,78 @@ export class ModelOptimizer {
     // Calculate overall speed improvement from all optimizations
     let totalImprovement = 1;
     for (const model of this.optimizedModels.values()) {
-      if (model.metadata.quantized) totalImprovement *= 2.1;
-      if (model.metadata.pruned) totalImprovement *= 1.5;
-      if (model.metadata.gpu_accelerated) totalImprovement *= 8.5;
-      if (model.metadata.caching_enabled) totalImprovement *= 5;
+      if (model.metadata['quantized']) totalImprovement *= 2.1;
+      if (model.metadata['pruned']) totalImprovement *= 1.5;
+      if (model.metadata['gpu_accelerated']) totalImprovement *= 8.5;
+      if (model.metadata['caching_enabled']) totalImprovement *= 5;
     }
     return totalImprovement;
   }
 
   private async getModelInfo(modelId: string): Promise<ModelInfo | null> {
     const models = await this.registry.listModels();
-    return models.find(m => m.id === modelId) || null;
+    return models.find((m) => m.id === modelId) || null;
   }
 
-  private parseModelSize(sizeStr: string): number {
-    // Parse model size string like "25MB", "1.2GB" to MB
-    const match = sizeStr.match(/(\d+(?:\.\d+)?)\s*(MB|GB|KB)/i);
+  private parseModelSize(sizeStr?: string): number {
+    // Parse model size strings like "25MB", "1.2 GB", "900KB", "0.5TB" to MB
+    if (!sizeStr) return 0;
+    const match = String(sizeStr).trim().match(/(\d+(?:\.\d+)?)\s*(B|KB|MB|GB|TB)/i);
     if (!match) return 0;
 
-    const value = parseFloat(match[1]);
-    const unit = match[2].toUpperCase();
+    const [, valueStr, unitRaw] = match;
+    if (!valueStr) return 0;
+    const value = parseFloat(valueStr);
+    const unit = (unitRaw || 'MB').toUpperCase();
+    if (Number.isNaN(value)) return 0;
 
     switch (unit) {
-      case 'KB': return value / 1024;
-      case 'MB': return value;
-      case 'GB': return value * 1024;
-      default: return value;
+      case 'B':
+        return value / (1024 * 1024);
+      case 'KB':
+        return value / 1024;
+      case 'MB':
+        return value;
+      case 'GB':
+        return value * 1024;
+      case 'TB':
+        return value * 1024 * 1024;
+      default:
+        return value;
     }
   }
 
-  private reduceModelSize(originalSize: string, reductionFactor: number): string {
+  private reduceModelSize(originalSize: string | undefined, reductionFactor: number): string {
+    // Ensure reductionFactor is between 0 and <1
+    const safeReduction = Math.max(0, Math.min(0.99, reductionFactor ?? 0));
+
     const sizeInMB = this.parseModelSize(originalSize);
-    const newSizeInMB = sizeInMB * (1 - reductionFactor);
-    
-    if (newSizeInMB >= 1024) {
-      return `${(newSizeInMB / 1024).toFixed(1)}GB`;
-    } else {
-      return `${newSizeInMB.toFixed(1)}MB`;
+    if (sizeInMB <= 0) {
+      // Fallback: cannot parse, return original as-is
+      return originalSize ?? '0MB';
     }
+
+    const newSizeInMB = sizeInMB * (1 - safeReduction);
+    // Guard against underflow and ensure a sensible minimum
+    const clampedMB = Math.max(newSizeInMB, 0.1 / 1024); // minimum 0.1KB in MB
+
+    return this.formatSizeFromMB(clampedMB);
+  }
+
+  private formatSizeFromMB(sizeInMB: number): string {
+    // Formats a size in MB to the most suitable unit (MB, GB, TB) with 1 decimal precision
+    if (!Number.isFinite(sizeInMB) || sizeInMB <= 0) return '0MB';
+    if (sizeInMB >= 1024 * 1024) {
+      return `${(sizeInMB / (1024 * 1024)).toFixed(1)}TB`;
+    }
+    if (sizeInMB >= 1024) {
+      return `${(sizeInMB / 1024).toFixed(1)}GB`;
+    }
+    if (sizeInMB < 1) {
+      // show in KB if less than 1MB
+      return `${(sizeInMB * 1024).toFixed(1)}KB`;
+    }
+    return `${sizeInMB.toFixed(1)}MB`;
   }
 
   private startCacheCleanup(): void {

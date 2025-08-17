@@ -1,12 +1,12 @@
 @agent hello-world v1
 trigger http POST /hello
-secret OPENAI=env:OPENAI_KEY
+secret OLLAMA_URL=env:OLLAMA_URL
 var name = input.name
 
 step greet:
   kind llm
-  model gpt-4o
-  provider openai
+  model qwen2
+  provider ollama
   prompt """
     Hello {name}, please provide a friendly greeting and one helpful tip for today.
   """

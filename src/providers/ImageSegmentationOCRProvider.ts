@@ -29,12 +29,12 @@ export class ImageSegmentationOCRProvider extends ModelProvider {
     });
   }
 
-  supports(modelType: ModelType): boolean {
+  override supports(modelType: ModelType): boolean {
     const supportedTypes: ModelType[] = ['CNN', 'Vision', 'Transformer'];
     return supportedTypes.includes(modelType);
   }
 
-  async execute(request: ModelRequest): Promise<ModelResponse> {
+  override async execute(request: ModelRequest): Promise<ModelResponse> {
     const startTime = Date.now();
     
     try {
@@ -71,7 +71,7 @@ export class ImageSegmentationOCRProvider extends ModelProvider {
     }
   }
 
-  getCapabilities(): ModelCapabilities {
+  override getCapabilities(): ModelCapabilities {
     return {
       supportedTypes: ['CNN', 'Vision', 'Transformer'],
       capabilities: [
@@ -87,7 +87,7 @@ export class ImageSegmentationOCRProvider extends ModelProvider {
     };
   }
 
-  validateConfig(config: ModelConfig): ValidationResult {
+  override validateConfig(config: ModelConfig): ValidationResult {
     const errors: any[] = [];
     const warnings: any[] = [];
 
@@ -112,7 +112,7 @@ export class ImageSegmentationOCRProvider extends ModelProvider {
     };
   }
 
-  async listModels(): Promise<ModelInfo[]> {
+  override async listModels(): Promise<ModelInfo[]> {
     const models: ModelInfo[] = [
       // Semantic Segmentation Models
       {
@@ -352,12 +352,12 @@ export class ImageSegmentationOCRProvider extends ModelProvider {
     return models;
   }
 
-  async getModelInfo(modelId: string): Promise<ModelInfo | null> {
+  override async getModelInfo(modelId: string): Promise<ModelInfo | null> {
     const models = await this.listModels();
     return models.find(m => m.id === modelId) || null;
   }
 
-  async isAvailable(): Promise<boolean> {
+  override async isAvailable(): Promise<boolean> {
     try {
       // Check backend and OCR engine availability
       const backendAvailable = await this.checkBackendAvailability();
@@ -676,7 +676,7 @@ export class ImageSegmentationOCRProvider extends ModelProvider {
       usage: {
         inputSize: this.calculateImageSize(request.input),
         outputSize: results.segmentation_mask.length,
-        processingTime: 0
+        duration: 0
       },
       finishReason: 'completed',
       metadata: {
@@ -710,7 +710,7 @@ export class ImageSegmentationOCRProvider extends ModelProvider {
       usage: {
         inputSize: this.calculateImageSize(request.input),
         outputSize: results.text_detections.length,
-        processingTime: 0
+        duration: 0
       },
       finishReason: 'completed',
       metadata: {

@@ -3,7 +3,6 @@ import {
   ModelInfo, 
   ModelRecommendation, 
   TaskType, 
-  ModelCapabilities,
   ProviderHealthStatus 
 } from './ModelProvider';
 import { ModelType } from '../types/global';
@@ -467,7 +466,7 @@ export class ModelRegistry {
     return Math.max(0, score);
   }
 
-  private getRecommendationReason(model: ModelInfo, task: TaskType, score: number): string {
+  private getRecommendationReason(_model: ModelInfo, task: TaskType, score: number): string {
     if (score >= 60) {
       return `Excellent match for ${task} with strong capabilities`;
     } else if (score >= 40) {

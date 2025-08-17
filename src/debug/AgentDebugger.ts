@@ -50,8 +50,8 @@ export interface Breakpoint {
 export class AgentDebugger {
     private sessions: Map<string, DebugSession> = new Map();
     private parser: EnhancedAgentParser;
-    private providerRouter?: ProviderRouter;
-    private validator?: ProviderValidator;
+    private providerRouter: ProviderRouter | undefined;
+    private validator: ProviderValidator | undefined;
 
     constructor(providerRouter?: ProviderRouter) {
         this.parser = new EnhancedAgentParser();
@@ -103,7 +103,7 @@ export class AgentDebugger {
             currentStep: 0,
             variables,
             stepResults: [],
-            breakpoints: new Set(),
+            breakpoints: new Set<string>(),
             status: 'running',
             startTime: new Date()
         };
@@ -134,7 +134,7 @@ export class AgentDebugger {
             return null;
         }
 
-        const step = session.ast.steps[session.currentStep];
+        const step = session.ast.steps[session.currentStep]!;
         const stepResult: StepExecutionResult = {
             stepId: step.id,
             status: 'running',
@@ -198,7 +198,7 @@ export class AgentDebugger {
         const results: StepExecutionResult[] = [];
 
         while (session.currentStep < session.ast.steps.length && session.status === 'running') {
-            const step = session.ast.steps[session.currentStep];
+            const step = session.ast.steps[session.currentStep]!;
 
             // Check for breakpoint
             if (session.breakpoints.has(step.id)) {
@@ -210,10 +210,9 @@ export class AgentDebugger {
             const result = await this.stepNext(sessionId);
             if (result) {
                 results.push(result);
-            }
-
-            if (session.status === 'error') {
-                break;
+                if (result.status === 'failed') {
+                    break;
+                }
             }
         }
 
@@ -355,76 +354,66 @@ export class AgentDebugger {
 
     private evaluateCondition(condition: string, variables: Record<string, any>): boolean {
         try {
-            // Simple condition evaluation - replace variables in condition
-            let evaluatedCondition = condition;
-
-            // Replace variable references like {variable_name}
-            evaluatedCondition = evaluatedCondition.replace(/\{([^}]+)\}/g, (match, varName) => {
+            // Replace variable references like {var}
+            let evaluated = condition;
+            evaluated = evaluated.replace(/\{([^}]+)\}/g, (_match, varName) => {
                 const value = variables[varName];
                 return JSON.stringify(value);
             });
 
-            // For safety, only allow simple comparisons
-            const safeCondition = evaluatedCondition.match(/^[^;{}()]*$/);
-            if (!safeCondition) {
+            // Basic safety: disallow dangerous characters
+            const safe = evaluated.match(/^[^;{}()]*$/);
+            if (!safe) {
                 console.warn(`Unsafe condition detected: ${condition}`);
-                return true; // Default to true for safety
+                return true;
             }
 
-            // Use Function constructor for evaluation (safer than eval)
-            return new Function('return ' + evaluatedCondition)();
+            // Evaluate
+            // eslint-disable-next-line no-new-func
+            return new Function('return ' + evaluated)();
         } catch (error) {
             console.warn(`Failed to evaluate condition: ${condition}`, error);
-            return true; // Default to true if evaluation fails
-        }
-    }
-
-    private async executeStep(step: any, variables: Record<string, any>): Promise<any> {
-        // Replace variables in step configuration
-        const processedStep = this.replaceVariables(step, variables);
-
-        // Mock execution based on step type
-        switch (step.kind) {
-            case 'llm':
-                return await this.executeLLMStep(processedStep);
-
-            case 'http':
-                return await this.executeHttpStep(processedStep);
-
-            case 'function':
-                return await this.executeFunctionStep(processedStep);
-
-            case 'vision':
-                return await this.executeVisionStep(processedStep);
-
-            case 'audio':
-                return await this.executeAudioStep(processedStep);
-
-            default:
-                return await this.executeGenericStep(processedStep);
+            return true;
         }
     }
 
     private replaceVariables(obj: any, variables: Record<string, any>): any {
         if (typeof obj === 'string') {
-            return obj.replace(/\{([^}]+)\}/g, (match, varName) => {
-                return variables[varName] !== undefined ? variables[varName] : match;
+            return obj.replace(/\{([^}]+)\}/g, (_match, varName) => {
+                return variables[varName] !== undefined ? variables[varName] : _match;
             });
         } else if (Array.isArray(obj)) {
             return obj.map(item => this.replaceVariables(item, variables));
         } else if (obj && typeof obj === 'object') {
             const result: any = {};
             for (const [key, value] of Object.entries(obj)) {
-                result[key] = this.replaceVariables(value, variables);
+                result[key] = this.replaceVariables(value as any, variables);
             }
             return result;
         }
         return obj;
     }
 
+    private async executeStep(step: any, variables: Record<string, any>): Promise<any> {
+        const processedStep = this.replaceVariables(step, variables);
+        switch (processedStep.kind) {
+            case 'llm':
+                return await this.executeLLMStep(processedStep);
+            case 'http':
+                return await this.executeHttpStep(processedStep);
+            case 'function':
+                return await this.executeFunctionStep(processedStep);
+            case 'vision':
+                return await this.executeVisionStep(processedStep);
+            case 'audio':
+                return await this.executeAudioStep(processedStep);
+            default:
+                return await this.executeGenericStep(processedStep);
+        }
+    }
+
     private async executeLLMStep(step: any): Promise<any> {
         console.log(`🤖 Executing LLM step with prompt: ${step.prompt?.substring(0, 100)}...`);
-
         if (this.providerRouter && step.provider && step.model) {
             try {
                 const request = {
@@ -432,30 +421,21 @@ export class AgentDebugger {
                     input: step.prompt || step.input,
                     parameters: step.parameters || {}
                 };
-
                 const response = await this.providerRouter.executeRequest(request);
                 return response.content;
             } catch (error) {
-                console.warn(`Provider execution failed, using mock response:`, error);
+                console.warn('Provider execution failed, using mock response:', error);
             }
         }
-
-        // Mock response
         return {
             content: `Mock LLM response for prompt: ${step.prompt?.substring(0, 50)}...`,
             model: step.model || 'mock-model',
-            usage: {
-                promptTokens: 10,
-                completionTokens: 20,
-                totalTokens: 30
-            }
+            usage: { promptTokens: 10, completionTokens: 20, totalTokens: 30 }
         };
     }
 
     private async executeHttpStep(step: any): Promise<any> {
         console.log(`🌐 Executing HTTP step: ${step.method || 'GET'} ${step.url}`);
-
-        // Mock HTTP response
         return {
             status: 200,
             statusText: 'OK',
@@ -466,8 +446,6 @@ export class AgentDebugger {
 
     private async executeFunctionStep(step: any): Promise<any> {
         console.log(`⚙️ Executing function step: ${step.function}`);
-
-        // Mock function execution
         return {
             result: `Mock function result for: ${step.function}`,
             args: step.args || {},
@@ -477,8 +455,6 @@ export class AgentDebugger {
 
     private async executeVisionStep(step: any): Promise<any> {
         console.log(`👁️ Executing vision step with model: ${step.model}`);
-
-        // Mock vision response
         return {
             objects: [
                 { class: 'person', confidence: 0.95, bbox: [100, 100, 200, 300] },
@@ -490,8 +466,6 @@ export class AgentDebugger {
 
     private async executeAudioStep(step: any): Promise<any> {
         console.log(`🎵 Executing audio step with model: ${step.model}`);
-
-        // Mock audio response
         return {
             transcription: 'Mock transcription of audio input',
             confidence: 0.92,
@@ -503,8 +477,6 @@ export class AgentDebugger {
 
     private async executeGenericStep(step: any): Promise<any> {
         console.log(`🔧 Executing generic step: ${step.id}`);
-
-        // Mock generic response
         return {
             stepId: step.id,
             result: 'Mock step execution result',
