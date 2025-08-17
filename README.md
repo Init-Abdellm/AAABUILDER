@@ -5,7 +5,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3+-blue.svg)](package.json)
 [![License](https://img.shields.io/badge/license-Apache%202.0-brightgreen.svg)](LICENSE)
 [![Downloads](https://img.shields.io/npm/dm/aaab.svg)](https://www.npmjs.com/package/aaab)
-[![Stars](https://github.com/Init-Abdellm/AAABuilder/stargazers)](https://github.com/Init-Abdellm/AAABuilder)
+[![GitHub stars](https://img.shields.io/github/stars/Init-Abdellm/AAABuilder?style=social)](https://github.com/Init-Abdellm/AAABuilder/stargazers)
 
 **AAABuilder** (Advanced AI Agent Builder) is a comprehensive, production-ready AI/ML development framework that transforms complex AI workflows into scalable APIs. Built with TypeScript-first development, it provides unified support for all major AI/ML model types including LLMs, Computer Vision, Audio Processing, Traditional ML, and more.
 
