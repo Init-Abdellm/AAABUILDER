@@ -1,5 +1,5 @@
 {
-  "name": "AAAB",
+  "name": "aaab",
   "version": "0.0.1",
   "description": "Advanced AI Agent Builder - A comprehensive framework for building AI agents with TypeScript support",
   "main": "bin/aaab.js",
