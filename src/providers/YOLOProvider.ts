@@ -15,7 +15,6 @@ import { ModelType } from '../types/global';
  */
 export class YOLOProvider extends ModelProvider {
   private loadedModels: Map<string, any> = new Map();
-  private onnxRuntime: any;
 
   constructor(config: Record<string, any> = {}) {
     super('yolo', 'object-detection', {
@@ -629,10 +628,7 @@ export class YOLOProvider extends ModelProvider {
 
   private async initializeONNX(): Promise<void> {
     // Mock ONNX initialization
-    this.onnxRuntime = {
-      initialized: true,
-      version: '1.16.0'
-    };
+    // Mock initialization - no actual runtime needed for demo
   }
 
   private async initializeTensorFlowJS(): Promise<void> {

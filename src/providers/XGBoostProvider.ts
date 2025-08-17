@@ -14,7 +14,6 @@ import { ModelType } from '../types/global';
  * Supports gradient boosting models via Python bridge
  */
 export class XGBoostProvider extends ModelProvider {
-  private pythonBridge: any;
 
   constructor(config: Record<string, any> = {}) {
     super('xgboost', 'gradient-boosting', {
@@ -547,11 +546,7 @@ export class XGBoostProvider extends ModelProvider {
 
   private async initializePythonBridge(): Promise<void> {
     // Initialize Python bridge (mock implementation)
-    this.pythonBridge = {
-      initialized: true,
-      version: '3.8+',
-      xgboost_version: '2.0.0'
-    };
+    // Mock initialization - no actual bridge needed for demo
   }
 
   private async executePythonCommand(_args: string[]): Promise<{ success: boolean; output?: string; error?: string }> {

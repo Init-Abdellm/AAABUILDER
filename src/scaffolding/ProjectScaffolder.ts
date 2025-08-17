@@ -94,15 +94,28 @@ export class ProjectScaffolder {
     }
 
     // Process template variables
-    const variables = {
-      PROJECT_NAME: options.projectName,
-      PROJECT_NAME_KEBAB: this.toKebabCase(options.projectName),
-      PROJECT_NAME_PASCAL: this.toPascalCase(options.projectName),
-      PROJECT_NAME_SNAKE: this.toSnakeCase(options.projectName),
+    const projectName = options.projectName || '';
+    const variables: any = {
+      PROJECT_NAME: projectName,
+      PROJECT_NAME_KEBAB: this.toKebabCase(projectName),
+      PROJECT_NAME_PASCAL: this.toPascalCase(projectName),
+      PROJECT_NAME_SNAKE: this.toSnakeCase(projectName),
       CURRENT_YEAR: new Date().getFullYear().toString(),
-      CURRENT_DATE: new Date().toISOString().split('T')[0],
-      ...options.variables
+      CURRENT_DATE: new Date().toISOString().split('T')[0]
     };
+    
+    // Add user variables, ensuring all values are strings
+    const userVars = options.variables || {};
+    for (const key in userVars) {
+      if (userVars.hasOwnProperty(key) && userVars[key]) {
+        variables[key] = userVars[key];
+      }
+    }
+    
+    // Ensure CURRENT_DATE is always a string
+    if (!variables.CURRENT_DATE) {
+      variables.CURRENT_DATE = new Date().toISOString().split('T')[0];
+    }
 
     // Create files from template
     for (const file of template.files) {
@@ -1055,12 +1068,12 @@ Created with AAABuilder on {{CURRENT_DATE}}.`
     variables: Record<string, string>
   ): Promise<void> {
     const packageJson = {
-      name: variables.PROJECT_NAME_KEBAB,
+      name: variables['PROJECT_NAME_KEBAB'],
       version: '1.0.0',
       description: template.description,
       main: 'index.js',
       scripts: template.scripts || {},
-      dependencies: {},
+      dependencies: {} as Record<string, string>,
       devDependencies: {
         '@types/node': '^20.0.0',
         'typescript': '^5.0.0',
@@ -1076,7 +1089,9 @@ Created with AAABuilder on {{CURRENT_DATE}}.`
     if (template.dependencies) {
       for (const dep of template.dependencies) {
         const [name, version] = dep.split('@');
-        packageJson.dependencies[name] = version || 'latest';
+        if (name) {
+          packageJson.dependencies[name] = version || 'latest';
+        }
       }
     }
 

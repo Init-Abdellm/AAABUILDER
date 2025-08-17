@@ -20,13 +20,13 @@ export class SpeakerEmotionProvider extends ModelProvider {
 
   constructor(config: Record<string, any> = {}) {
     super('speaker-emotion', 'audio-analysis', {
-      backend: config.backend || 'pyannote', // 'pyannote', 'speechbrain', 'wav2vec2'
-      enableGPU: config.enableGPU || false,
-      speakerEmbeddingModel: config.speakerEmbeddingModel || 'ecapa-tdnn',
-      emotionModel: config.emotionModel || 'wav2vec2-emotion',
-      similarityThreshold: config.similarityThreshold || 0.8,
-      minSegmentLength: config.minSegmentLength || 1.0, // seconds
-      maxSpeakers: config.maxSpeakers || 10,
+      backend: config['backend'] || 'pyannote', // 'pyannote', 'speechbrain', 'wav2vec2'
+      enableGPU: config['enableGPU'] || false,
+      speakerEmbeddingModel: config['speakerEmbeddingModel'] || 'ecapa-tdnn',
+      emotionModel: config['emotionModel'] || 'wav2vec2-emotion',
+      similarityThreshold: config['similarityThreshold'] || 0.8,
+      minSegmentLength: config['minSegmentLength'] || 1.0, // seconds
+      maxSpeakers: config['maxSpeakers'] || 10,
       ...config
     });
   }
@@ -84,15 +84,9 @@ export class SpeakerEmotionProvider extends ModelProvider {
     return {
       supportedTypes: ['ASR', 'CNN', 'Transformer'],
       capabilities: [
-        'speaker-identification',
-        'speaker-verification',
-        'speaker-diarization',
-        'emotion-detection',
-        'emotion-classification',
-        'voice-activity-detection',
-        'speaker-embedding',
-        'emotion-intensity',
-        'multi-speaker-analysis'
+        'speech-to-text',
+        'voice-cloning',
+        'anomaly-detection'
       ],
       maxInputSize: 50 * 1024 * 1024, // 50MB audio file
       maxOutputSize: 10000, // Analysis results
@@ -106,7 +100,7 @@ export class SpeakerEmotionProvider extends ModelProvider {
 
   validateConfig(config: ModelConfig): ValidationResult {
     const errors = [];
-    const warnings = [];
+    const warnings: any[] = [];
 
     // Validate model name
     if (!config.model) {
@@ -313,11 +307,11 @@ export class SpeakerEmotionProvider extends ModelProvider {
   async isAvailable(): Promise<boolean> {
     try {
       // Check backend availability
-      if (this.config.backend === 'pyannote') {
+      if (this.config['backend'] === 'pyannote') {
         return await this.checkPyannoteAvailability();
-      } else if (this.config.backend === 'speechbrain') {
+      } else if (this.config['backend'] === 'speechbrain') {
         return await this.checkSpeechBrainAvailability();
-      } else if (this.config.backend === 'wav2vec2') {
+      } else if (this.config['backend'] === 'wav2vec2') {
         return await this.checkWav2Vec2Availability();
       }
       return true;
@@ -326,14 +320,14 @@ export class SpeakerEmotionProvider extends ModelProvider {
     }
   }
 
-  async initialize(): Promise<void> {
+  override async initialize(): Promise<void> {
     try {
       // Initialize backend
-      if (this.config.backend === 'pyannote') {
+      if (this.config['backend'] === 'pyannote') {
         await this.initializePyannote();
-      } else if (this.config.backend === 'speechbrain') {
+      } else if (this.config['backend'] === 'speechbrain') {
         await this.initializeSpeechBrain();
-      } else if (this.config.backend === 'wav2vec2') {
+      } else if (this.config['backend'] === 'wav2vec2') {
         await this.initializeWav2Vec2();
       }
 
@@ -413,10 +407,10 @@ export class SpeakerEmotionProvider extends ModelProvider {
     const mockModel = {
       id: modelId,
       info: modelInfo,
-      embeddingDim: modelInfo.parameters.embedding_dim || 192,
-      numEmotions: modelInfo.parameters.num_emotions || 7,
-      sampleRate: modelInfo.parameters.sample_rate || 16000,
-      analyze: (audio: any, options: any) => this.mockAnalysis(audio, modelInfo, options)
+      embeddingDim: modelInfo.parameters['embedding_dim'] || 192,
+      numEmotions: modelInfo.parameters['num_emotions'] || 7,
+      sampleRate: modelInfo.parameters['sample_rate'] || 16000,
+      analyze: (audio: any, options: any) => this.mockSpeakerIdentification(audio, modelInfo, options)
     };
 
     this.loadedModels.set(modelId, mockModel);
@@ -438,7 +432,7 @@ export class SpeakerEmotionProvider extends ModelProvider {
 
   private generateAudioSegments(): Array<{start: number, end: number, energy: number}> {
     const numSegments = Math.floor(Math.random() * 8) + 3;
-    const segments = [];
+    const segments: Array<{start: number, end: number, energy: number}> = [];
     let currentTime = 0;
     
     for (let i = 0; i < numSegments; i++) {
@@ -549,8 +543,8 @@ export class SpeakerEmotionProvider extends ModelProvider {
     };
   }
 
-  private mockSpeakerIdentification(audio: any, model: any, request: ModelRequest): any {
-    const numSpeakers = Math.min(Math.floor(Math.random() * 4) + 1, this.config.maxSpeakers);
+  private mockSpeakerIdentification(audio: any, model: any, _request: ModelRequest): any {
+    const numSpeakers = Math.min(Math.floor(Math.random() * 4) + 1, this.config['maxSpeakers']);
     const speakers = [];
     
     for (let i = 0; i < numSpeakers; i++) {
@@ -581,9 +575,9 @@ export class SpeakerEmotionProvider extends ModelProvider {
     };
   }
 
-  private mockEmotionDetection(audio: any, model: any, request: ModelRequest): any {
+  private mockEmotionDetection(_audio: any, model: any, _request: ModelRequest): any {
     const emotions = model.info.metadata.emotions || ['neutral', 'happy', 'sad', 'angry', 'fear', 'surprise'];
-    const segments = [];
+    const segments: any[] = [];
     
     // Generate emotion segments
     const numSegments = Math.floor(Math.random() * 6) + 3;
@@ -596,8 +590,8 @@ export class SpeakerEmotionProvider extends ModelProvider {
       
       // Generate emotion probabilities
       const emotionProbs = emotions.map(() => Math.random());
-      const sum = emotionProbs.reduce((a, b) => a + b, 0);
-      const normalizedProbs = emotionProbs.map(p => p / sum);
+      const sum = emotionProbs.reduce((a: number, b: number) => a + b, 0);
+      const normalizedProbs = emotionProbs.map((p: number) => p / sum);
       
       const dominantEmotionIndex = normalizedProbs.indexOf(Math.max(...normalizedProbs));
       
@@ -607,7 +601,7 @@ export class SpeakerEmotionProvider extends ModelProvider {
         duration: end - start,
         emotion: emotions[dominantEmotionIndex],
         confidence: normalizedProbs[dominantEmotionIndex],
-        emotion_probabilities: emotions.reduce((obj: any, emotion, idx) => {
+        emotion_probabilities: emotions.reduce((obj: any, emotion: string, idx: number) => {
           obj[emotion] = normalizedProbs[idx];
           return obj;
         }, {}),
@@ -620,7 +614,7 @@ export class SpeakerEmotionProvider extends ModelProvider {
     }
     
     // Calculate overall emotion
-    const overallEmotionCounts = emotions.reduce((counts: any, emotion) => {
+    const overallEmotionCounts = emotions.reduce((counts: any, emotion: string) => {
       counts[emotion] = segments.filter(seg => seg.emotion === emotion).length;
       return counts;
     }, {});
@@ -643,7 +637,7 @@ export class SpeakerEmotionProvider extends ModelProvider {
   } 
  private generateSpeakerSegments(speakerId: string, totalDuration: number): any[] {
     const numSegments = Math.floor(Math.random() * 5) + 2;
-    const segments = [];
+    const segments: any[] = [];
     
     for (let i = 0; i < numSegments; i++) {
       const start = Math.random() * totalDuration * 0.8;
@@ -1106,13 +1100,13 @@ export class SpeakerEmotionProvider extends ModelProvider {
     // Mock emotion classifier initialization
     this.emotionClassifier = {
       initialized: true,
-      model_type: this.config.emotionModel,
+      model_type: this.config['emotionModel'],
       emotions: ['neutral', 'happy', 'sad', 'angry', 'fear', 'disgust', 'surprise'],
       sample_rate: 16000
     };
   }
 
-  async cleanup(): Promise<void> {
+  override async cleanup(): Promise<void> {
     // Dispose of all loaded models
     for (const [modelId, model] of this.loadedModels) {
       try {

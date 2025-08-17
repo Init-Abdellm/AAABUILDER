@@ -18,19 +18,21 @@ export class RealTimeAudioProvider extends ModelProvider {
   private streamingConnections: Map<string, any> = new Map();
   private audioBuffers: Map<string, any> = new Map();
   private processingPipelines: Map<string, any> = new Map();
+  private level: number = 0;
+  private _buffer: any = null;
 
   constructor(config: Record<string, any> = {}) {
     super('real-time-audio', 'audio-streaming', {
-      backend: config.backend || 'webrtc', // 'webrtc', 'websocket', 'grpc'
-      enableGPU: config.enableGPU || false,
-      sampleRate: config.sampleRate || 16000,
-      frameSize: config.frameSize || 160, // 10ms at 16kHz
-      bufferSize: config.bufferSize || 4800, // 300ms buffer
-      maxLatency: config.maxLatency || 50, // 50ms max latency
-      enableEchoCancellation: config.enableEchoCancellation || true,
-      enableNoiseReduction: config.enableNoiseReduction || true,
-      enableVAD: config.enableVAD || true, // Voice Activity Detection
-      compressionCodec: config.compressionCodec || 'opus',
+      backend: config['backend'] || 'webrtc', // 'webrtc', 'websocket', 'grpc'
+      enableGPU: config['enableGPU'] || false,
+      sampleRate: config['sampleRate'] || 16000,
+      frameSize: config['frameSize'] || 160, // 10ms at 16kHz
+      bufferSize: config['bufferSize'] || 4800, // 300ms buffer
+      maxLatency: config['maxLatency'] || 50, // 50ms max latency
+      enableEchoCancellation: config['enableEchoCancellation'] || true,
+      enableNoiseReduction: config['enableNoiseReduction'] || true,
+      enableVAD: config['enableVAD'] || true, // Voice Activity Detection
+      compressionCodec: config['compressionCodec'] || 'opus',
       ...config
     });
   }
@@ -85,9 +87,9 @@ export class RealTimeAudioProvider extends ModelProvider {
     return {
       supportedTypes: ['RNN', 'CNN', 'Transformer'],
       capabilities: [
-        'text-generation',
-        'audio-processing',
-        'real-time-processing'
+        'speech-to-text',
+        'text-to-speech',
+        'streaming'
       ],
       maxInputSize: 1024 * 1024, // 1MB per chunk
       maxOutputSize: 1024 * 1024, // 1MB per response
@@ -554,8 +556,8 @@ export class RealTimeAudioProvider extends ModelProvider {
     }
 
     // Validate streaming parameters
-    if (request.parameters && request.parameters.streaming) {
-      if (!request.parameters.stream_id) {
+    if (request.parameters && request.parameters['streaming']) {
+      if (!request.parameters['stream_id']) {
         errors.push({
           field: 'parameters.stream_id',
           message: 'Stream ID is required for streaming requests',
@@ -630,10 +632,10 @@ export class RealTimeAudioProvider extends ModelProvider {
     const mockModel = {
       id: modelId,
       info: modelInfo,
-      category: modelInfo.metadata.category,
+      category: modelInfo.metadata['category'],
       sampleRate: modelInfo.parameters['sample_rate'] || 16000,
       frameSize: modelInfo.parameters['frame_size'] || 160,
-      latency: this.parseLatency(modelInfo.metadata.latency),
+      latency: this.parseLatency(modelInfo.metadata['latency']),
       processStream: (audio: any, config: any) => this.mockStreamProcessing(audio, modelInfo, config)
     };
 
@@ -683,7 +685,7 @@ export class RealTimeAudioProvider extends ModelProvider {
       getProcessingChunk: () => new Array(config.frame_size || 160).fill(Math.random()),
       getLevel: () => this.level,
       cleanup: () => {
-        this.buffer = null;
+        this._buffer = null;
         this.level = 0;
       }
     };
@@ -709,12 +711,12 @@ export class RealTimeAudioProvider extends ModelProvider {
   private parseLatency(latencyStr: string): number {
     if (typeof latencyStr === 'string') {
       const match = latencyStr.match(/(\d+)ms/);
-      return match ? parseInt(match[1]) : 50;
+      return match ? parseInt(match[1] || '50') : 50;
     }
     return 50;
   }
 
-  private async mockRealTimeTranscription(model: any, input: any, config: any): Promise<any> {
+  private async mockRealTimeTranscription(model: any, _input: any, _config: any): Promise<any> {
     return {
       transcription: {
         text: "This is a mock real-time transcription result",
@@ -731,7 +733,7 @@ export class RealTimeAudioProvider extends ModelProvider {
     };
   }
 
-  private async mockRealTimeEnhancement(model: any, input: any, config: any): Promise<any> {
+  private async mockRealTimeEnhancement(model: any, input: any, _config: any): Promise<any> {
     return {
       enhanced_audio: input, // Mock enhanced audio
       enhancement_metrics: {
@@ -748,7 +750,7 @@ export class RealTimeAudioProvider extends ModelProvider {
     };
   }
 
-  private async mockRealTimeAnalysis(model: any, input: any, config: any): Promise<any> {
+  private async mockRealTimeAnalysis(model: any, _input: any, _config: any): Promise<any> {
     const category = model.category;
     
     if (category === 'real-time-analysis' && model.id.includes('speaker')) {
@@ -762,7 +764,7 @@ export class RealTimeAudioProvider extends ModelProvider {
     return this.mockSpeakerAnalysis(model);
   }
 
-  private async mockBidirectionalStreaming(model: any, input: any, config: any): Promise<any> {
+  private async mockBidirectionalStreaming(_model: any, input: any, _config: any): Promise<any> {
     return {
       conversation_response: {
         text: "This is a mock conversational response",
@@ -839,8 +841,8 @@ export class RealTimeAudioProvider extends ModelProvider {
     };
   }
 
-  private mockStreamProcessing(audio: any, modelInfo: ModelInfo, config: any): any {
-    const category = modelInfo.metadata.category;
+  private mockStreamProcessing(audio: any, modelInfo: ModelInfo, _config: any): any {
+    const category = modelInfo.metadata['category'];
     
     if (category === 'real-time-transcription') {
       return {
@@ -1020,7 +1022,7 @@ export class RealTimeAudioProvider extends ModelProvider {
     console.log('Processing pipelines initialized');
   }
 
-  async cleanup(): Promise<void> {
+  override async cleanup(): Promise<void> {
     // Stop all active streams
     for (const [streamId] of this.processingPipelines) {
       try {

@@ -120,7 +120,7 @@ export class AgentTester {
   private parser: EnhancedAgentParser;
   private debugger: AgentDebugger;
   private mockProvider: MockProvider;
-  private providerRouter?: ProviderRouter;
+  private providerRouter: ProviderRouter | undefined;
 
   constructor(providerRouter?: ProviderRouter) {
     this.parser = new EnhancedAgentParser();
@@ -286,10 +286,10 @@ export class AgentTester {
   }> {
     const result = {
       valid: true,
-      parseErrors: [],
-      validationErrors: [],
-      warnings: [],
-      recommendations: []
+      parseErrors: [] as any[],
+      validationErrors: [] as string[],
+      warnings: [] as string[],
+      recommendations: [] as string[]
     };
 
     // Parse the agent
@@ -538,7 +538,6 @@ export class AgentTester {
     }
 
     // Check for step dependencies
-    const stepIds = new Set(ast.steps.map(s => s.id));
     for (const step of ast.steps) {
       if (step.when) {
         const referencedVars = step.when.match(/\{([^}]+)\}/g);
@@ -580,7 +579,7 @@ export class AgentTester {
     }
 
     const input: Record<string, any> = {};
-    for (const [varName, varConfig] of Object.entries(parseResult.ast.vars)) {
+    for (const [_varName, varConfig] of Object.entries(parseResult.ast.vars)) {
       if (varConfig.required && varConfig.from) {
         input[varConfig.from] = this.generateMockValue(varConfig.type);
       }

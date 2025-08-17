@@ -602,7 +602,7 @@ export class ImageSegmentationOCRProvider extends ModelProvider {
     };
   }
 
-  private async postprocessOCR(ocrOutput: any, ocrEngine: any, request: ModelRequest): Promise<any> {
+  private async postprocessOCR(ocrOutput: any, _ocrEngine: any, request: ModelRequest): Promise<any> {
     const confidenceThreshold = request.parameters?.['ocr_confidence_threshold'] || this.config['ocrConfidenceThreshold'];
     
     // Filter detections by confidence
@@ -737,7 +737,7 @@ export class ImageSegmentationOCRProvider extends ModelProvider {
   private validateTaskParameters(
     parameters: any, 
     errors: any[], 
-    warnings: any[]
+    _warnings: any[]
   ): void {
     // Validate segmentation threshold
     if (parameters['segmentation_threshold'] !== undefined) {

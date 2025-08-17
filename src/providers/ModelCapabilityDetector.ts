@@ -4,7 +4,6 @@ import {
 } from '../types/global';
 import { 
   ModelInfo, 
-  ModelCapabilities, 
   TaskType 
 } from './ModelProvider';
 
@@ -52,32 +51,32 @@ export class ModelCapabilityDetector {
       'graph-processing'
     ],
     'RNN': [
-      'time-series', 'text-generation', 'sequence-processing'
+      'time-series', 'text-generation'
     ],
     'CNN': [
       'image-classification', 'image-segmentation', 'object-detection'
     ],
     'GAN': [
-      'image-generation', 'data-generation'
+      'image-generation'
     ],
     'Diffusion': [
-      'image-generation', 'image-editing'
+      'image-generation'
     ],
     'Transformer': [
       'text-generation', 'text-completion', 'text-embedding',
       'image-classification', 'multimodal'
     ],
     'MLP': [
-      'classification', 'regression'
+      'mathematical-reasoning'
     ],
     'Autoencoder': [
-      'anomaly-detection', 'dimensionality-reduction'
+      'anomaly-detection'
     ],
     'BERT': [
-      'text-embedding', 'text-classification', 'question-answering'
+      'text-embedding'
     ],
     'RAG': [
-      'question-answering', 'text-generation', 'retrieval'
+      'text-generation'
     ],
     'Hybrid': [
       'multimodal', 'text-generation', 'image-classification'
@@ -91,7 +90,7 @@ export class ModelCapabilityDetector {
   private static readonly PROVIDER_CAPABILITY_MAP: Record<string, ModelCapability[]> = {
     'openai': [
       'text-generation', 'text-completion', 'text-embedding',
-      'image-generation', 'code-generation', 'function-calling',
+      'image-generation', 'code-generation',
       'streaming', 'fine-tuning'
     ],
     'anthropic': [
@@ -114,7 +113,7 @@ export class ModelCapabilityDetector {
   };
 
   private static readonly MODEL_NAME_PATTERNS: Record<string, ModelCapability[]> = {
-    'gpt': ['text-generation', 'code-generation', 'function-calling'],
+    'gpt': ['text-generation', 'code-generation'],
     'claude': ['text-generation', 'code-generation', 'mathematical-reasoning'],
     'gemini': ['text-generation', 'multimodal', 'code-generation'],
     'llama': ['text-generation', 'code-generation'],
@@ -124,10 +123,10 @@ export class ModelCapabilityDetector {
     'stable-diffusion': ['image-generation'],
     'yolo': ['object-detection'],
     'resnet': ['image-classification'],
-    'bert': ['text-embedding', 'text-classification'],
-    'roberta': ['text-embedding', 'text-classification'],
+    'bert': ['text-embedding'],
+    'roberta': ['text-embedding'],
     't5': ['text-generation', 'text-completion'],
-    'bart': ['text-generation', 'summarization']
+    'bart': ['text-generation']
   };
 
   /**
@@ -144,31 +143,31 @@ export class ModelCapabilityDetector {
       modelInfo.capabilities.capabilities.forEach(cap => capabilities.add(cap));
       confidence = 0.9;
       detectionMethod = 'explicit';
-      metadata.source = 'explicit';
+      metadata['source'] = 'explicit';
     } else {
       // 2. Infer from model type
       const typeCapabilities = this.TYPE_CAPABILITY_MAP[modelInfo.type] || [];
       typeCapabilities.forEach(cap => capabilities.add(cap));
       confidence += 0.3;
-      metadata.typeInferred = typeCapabilities;
+      metadata['typeInferred'] = typeCapabilities;
 
       // 3. Infer from provider
       const providerCapabilities = this.PROVIDER_CAPABILITY_MAP[modelInfo.provider] || [];
       providerCapabilities.forEach(cap => capabilities.add(cap));
       confidence += 0.2;
-      metadata.providerInferred = providerCapabilities;
+      metadata['providerInferred'] = providerCapabilities;
 
       // 4. Infer from model name patterns
       const nameCapabilities = this.inferFromModelName(modelInfo.name);
       nameCapabilities.forEach(cap => capabilities.add(cap));
       confidence += nameCapabilities.length > 0 ? 0.3 : 0;
-      metadata.nameInferred = nameCapabilities;
+      metadata['nameInferred'] = nameCapabilities;
 
       // 5. Infer from metadata
       const metadataCapabilities = this.inferFromMetadata(modelInfo.metadata);
       metadataCapabilities.forEach(cap => capabilities.add(cap));
       confidence += metadataCapabilities.length > 0 ? 0.2 : 0;
-      metadata.metadataInferred = metadataCapabilities;
+      metadata['metadataInferred'] = metadataCapabilities;
     }
 
     return {
@@ -215,7 +214,7 @@ export class ModelCapabilityDetector {
     const requirements: Record<TaskType, TaskCapabilityRequirements> = {
       'text-generation': {
         required: ['text-generation'],
-        optional: ['streaming', 'function-calling'],
+        optional: ['streaming'],
         preferred: ['code-generation', 'mathematical-reasoning']
       },
       'text-completion': {
@@ -230,7 +229,7 @@ export class ModelCapabilityDetector {
       },
       'image-generation': {
         required: ['image-generation'],
-        optional: ['image-editing'],
+        optional: [],
         preferred: []
       },
       'image-classification': {
@@ -255,13 +254,13 @@ export class ModelCapabilityDetector {
       },
       'audio-analysis': {
         required: ['speech-to-text'],
-        optional: ['speaker-identification', 'emotion-detection'],
+        optional: [],
         preferred: []
       },
       'code-generation': {
         required: ['code-generation'],
         optional: ['code-completion', 'code-analysis'],
-        preferred: ['function-calling']
+        preferred: []
       },
       'code-completion': {
         required: ['code-completion'],
@@ -285,8 +284,8 @@ export class ModelCapabilityDetector {
       },
       'question-answering': {
         required: ['text-generation'],
-        optional: ['logical-reasoning', 'retrieval'],
-        preferred: ['function-calling']
+        optional: ['logical-reasoning'],
+        preferred: []
       },
       'summarization': {
         required: ['text-generation'],
@@ -299,17 +298,17 @@ export class ModelCapabilityDetector {
         preferred: []
       },
       'sentiment-analysis': {
-        required: ['text-classification'],
+        required: ['text-embedding'],
         optional: [],
         preferred: []
       },
       'classification': {
-        required: ['text-classification'],
-        optional: ['image-classification'],
+        required: ['image-classification'],
+        optional: [],
         preferred: []
       },
       'clustering': {
-        required: ['clustering'],
+        required: ['anomaly-detection'],
         optional: [],
         preferred: []
       },
@@ -385,7 +384,7 @@ export class ModelCapabilityDetector {
     if (metadata.supportsStreaming) capabilities.push('streaming');
     if (metadata.supportsFineTuning) capabilities.push('fine-tuning');
     if (metadata.multimodal) capabilities.push('multimodal');
-    if (metadata.functionCalling) capabilities.push('function-calling');
+    if (metadata.functionCalling) capabilities.push('code-generation');
 
     // Check description for capability hints
     if (metadata.description) {

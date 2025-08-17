@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander';
-import * as inquirer from 'inquirer';
+import inquirer from 'inquirer';
 import * as path from 'path';
 import { ProjectScaffolder } from './ProjectScaffolder';
 
