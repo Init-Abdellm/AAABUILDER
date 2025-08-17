@@ -1,6 +1,6 @@
 # AAABuilder - Advanced AI/ML Agent Framework
 
-[![Version](https://img.shields.io/badge/version-0.0.1-blue.svg)](package.json)
+[![Version](https://img.shields.io/badge/version-0.0.2-blue.svg)](package.json)
 [![Node](https://img.shields.io/badge/node-%3E%3D18-green.svg)](package.json)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3+-blue.svg)](package.json)
 [![License](https://img.shields.io/badge/license-Apache%202.0-brightgreen.svg)](LICENSE)

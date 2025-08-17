@@ -1,6 +1,6 @@
 {
   "name": "aaab",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Advanced AI Agent Builder - A comprehensive framework for building AI agents with TypeScript support",
   "main": "bin/aaab.js",
   "bin": {
