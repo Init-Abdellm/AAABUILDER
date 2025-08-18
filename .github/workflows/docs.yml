@@ -18,7 +18,7 @@ jobs:
         run: |
           rm -rf website
           mkdir -p website
-          cp -r docs-ui/* website/
+          cp -r docs/docs-ui/* website/
           mkdir -p website/docs
           cp -r docs/* website/docs/
 
