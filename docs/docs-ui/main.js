@@ -17,17 +17,26 @@
 
     function docsBase() {
         try {
-            return window.location.pathname.includes('/docs/docs-ui/') ? '..' : './docs';
+            const path = window.location.pathname;
+            if (path.endsWith('/') || path.endsWith('/index.html')) {
+                return 'docs';
+            }
+            // If running locally with docs/docs-ui/index.html
+            return path.includes('/docs/docs-ui/') ? '..' : 'docs';
         } catch (_) {
-            return './docs';
+            return 'docs';
         }
     }
 
     function assetBase() {
         try {
-            return window.location.pathname.includes('/docs/docs-ui/') ? '../' : 'docs/';
+            const path = window.location.pathname;
+            if (path.endsWith('/') || path.endsWith('/index.html')) {
+                return '';
+            }
+            return path.includes('/docs/docs-ui/') ? '../' : '';
         } catch (_) {
-            return 'docs/';
+            return '';
         }
     }
 
