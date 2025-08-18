@@ -506,7 +506,7 @@ a:hover {
 .content {
   max-width: var(--content-max-width);
   margin: 0 auto;
-  padding: var(--space-8) var(--space-8);
+  padding: var(--space-8) var(--space-6);
   line-height: var(--line-height-relaxed);
 }
 
@@ -854,28 +854,43 @@ a:hover {
   
   .layout {
     grid-template-columns: 1fr;
+    width: 100%;
   }
   
   .sidebar {
+    display: none;
     position: fixed;
     left: -100%;
     top: var(--header-height);
-    width: 100%;
-    max-width: 320px;
-    z-index: 999;
+    width: 85vw;
+    max-width: 360px;
+    z-index: 1001;
     transition: left var(--transition-normal);
   }
   
   .sidebar.open {
+    display: block;
     left: 0;
   }
   
+  /* Backdrop when sidebar is open */
+  body.sidebar-open .layout::before {
+    content: '';
+    position: fixed;
+    top: var(--header-height);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+  }
+  
   .content {
-    padding: var(--space-6);
+    padding: var(--space-4);
   }
   
   .hero {
-    padding: var(--space-12) var(--space-6);
+    padding: var(--space-10) var(--space-4);
   }
   
   .hero .title {
@@ -911,7 +926,7 @@ a:hover {
   }
   
   .content {
-    padding: var(--space-4);
+    padding: var(--space-3);
   }
   
   .hero {

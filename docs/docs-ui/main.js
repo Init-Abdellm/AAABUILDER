@@ -86,6 +86,32 @@
         }
     }
 
+    function routeFromHash() {
+        const hash = (location.hash || '').slice(1);
+        if (!hash || hash === 'home') {
+            renderHome();
+            return;
+        }
+        // If it's a markdown doc, load it
+        if (hash.endsWith('.md')) {
+            const link = docLinks.find(l => l.getAttribute('data-doc') === hash);
+            setActive(link);
+            loadDoc(hash);
+            return;
+        }
+        // Otherwise treat it as an in-page anchor. Ensure a doc is loaded.
+        const current = document.querySelector('[data-doc].active');
+        const doc = current ? current.getAttribute('data-doc') : 'index.md';
+        const link = docLinks.find(l => l.getAttribute('data-doc') === doc);
+        setActive(link);
+        loadDoc(doc).then(() => {
+            const el = document.getElementById(hash);
+            if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    }
+
     function highlightCode() {
         try {
             document.querySelectorAll('pre code').forEach(block => {
@@ -262,9 +288,25 @@ outputs:
                 const doc = a.getAttribute('data-doc');
                 const link = [...document.querySelectorAll('[data-doc]')].find(l => l.getAttribute('data-doc') === doc);
                 setActive(link);
-                history.pushState({ doc }, '', `#${doc}`);
-                loadDoc(doc);
+                location.hash = `#${doc}`;
             });
+        });
+
+        // Intercept markdown links inside content
+        contentEl.addEventListener('click', ev => {
+            const a = ev.target.closest('a');
+            if (!a) return;
+            const href = a.getAttribute('href') || '';
+            if (href.endsWith('.md')) {
+                ev.preventDefault();
+                const doc = href.split('#')[0];
+                const link = [...document.querySelectorAll('[data-doc]')].find(l => l.getAttribute('data-doc') === doc);
+                setActive(link);
+                location.hash = `#${doc}`;
+            } else if (href.startsWith('#')) {
+                // in-page anchor: do not trigger doc reload
+                // allow default which updates hash and browser scroll
+            }
         });
     }
 
@@ -274,8 +316,7 @@ outputs:
                 ev.preventDefault();
                 const doc = link.getAttribute('data-doc');
                 setActive(link);
-                history.pushState({ doc }, '', `#${doc}`);
-                loadDoc(doc);
+                location.hash = `#${doc}`;
             });
         });
 
@@ -406,7 +447,7 @@ outputs:
     function toggleMobileMenu() {
         sidebar.classList.toggle('open');
         const isOpen = sidebar.classList.contains('open');
-        
+        document.body.classList.toggle('sidebar-open', isOpen);
         if (isOpen) {
             mobileMenuToggle.innerHTML = '<i class="ri-close-line"></i>';
             mobileMenuToggle.setAttribute('aria-label', 'Close mobile menu');
@@ -418,6 +459,7 @@ outputs:
 
     function closeMobileMenu() {
         sidebar.classList.remove('open');
+        document.body.classList.remove('sidebar-open');
         mobileMenuToggle.innerHTML = '<i class="ri-menu-line"></i>';
         mobileMenuToggle.setAttribute('aria-label', 'Open mobile menu');
     }
@@ -495,26 +537,8 @@ outputs:
         document.addEventListener('keydown', handleKeyboard);
         document.addEventListener('click', handleClickOutside);
         
-        const hash = (location.hash || '#home').slice(1);
-        if (hash === 'home') {
-            renderHome();
-        } else {
-            const link = docLinks.find(l => l.getAttribute('data-doc') === hash) || docLinks[0];
-            setActive(link);
-            loadDoc(hash);
-        }
-        
-        window.addEventListener('popstate', ev => {
-            const st = ev.state;
-            if (st && st.page === 'home') {
-                renderHome();
-            } else {
-                const doc = (st && st.doc) || (location.hash || '#index.md').slice(1);
-                const link = docLinks.find(l => l.getAttribute('data-doc') === doc) || docLinks[0];
-                setActive(link);
-                loadDoc(doc);
-            }
-        });
+        routeFromHash();
+        window.addEventListener('hashchange', routeFromHash);
         
         if (yearEl) {
             yearEl.textContent = String(new Date().getFullYear());
