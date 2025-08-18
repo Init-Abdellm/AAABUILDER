@@ -31,12 +31,14 @@
     function assetBase() {
         try {
             const path = window.location.pathname;
+            // On GitHub Pages, site root hosts docs-ui and docs under /docs
             if (path.endsWith('/') || path.endsWith('/index.html')) {
-                return '';
+                return 'docs/';
             }
-            return path.includes('/docs/docs-ui/') ? '../' : '';
+            // When opened locally from docs/docs-ui/index.html
+            return path.includes('/docs/docs-ui/') ? '../' : 'docs/';
         } catch (_) {
-            return '';
+            return 'docs/';
         }
     }
 
