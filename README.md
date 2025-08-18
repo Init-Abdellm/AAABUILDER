@@ -7,7 +7,21 @@
 [![Downloads](https://img.shields.io/npm/dm/aaab.svg)](https://www.npmjs.com/package/aaab)
 [![GitHub stars](https://img.shields.io/github/stars/Init-Abdellm/AAABuilder?style=social)](https://github.com/Init-Abdellm/AAABuilder/stargazers)
 
-**AAABuilder** (Advanced AI Agent Builder) is a comprehensive, production-ready AI/ML development framework that transforms complex AI workflows into scalable APIs. Built with TypeScript-first development, it provides unified support for all major AI/ML model types including LLMs, Computer Vision, Audio Processing, Traditional ML, and more.
+**AAABuilder** (Agent as a backend) is a comprehensive, production-ready AI/ML development framework that transforms complex AI workflows into scalable APIs. Built with TypeScript-first development, it provides unified support for all major AI/ML model types including LLMs, Computer Vision, Audio Processing, Traditional ML, and more.
+
+## UNIFIED Idea
+
+The goal of this project is to **transform backend processes into fully autonomous AI agents**, removing the complexity and overhead of traditional coding. By simply defining an `[Example.agent]` configuration file, you empower the system to:
+
+- Execute complex, multi-step workflows automatically  
+- Handle debugging and error resolution with AI assistance  
+- Leverage pre-built, customizable templates for common AI and ML use cases  
+- Perform system health checks and monitoring  
+- Seamlessly integrate and orchestrate various AI/ML models (LLM, vision, GAN, RL, etc.)  
+- Enable rapid development and deployment of AI-driven backend services without deep coding expertise  
+
+This approach dramatically reduces development time, lowers technical barriers, and unlocks new possibilities for building intelligent, adaptable backend systems.
+
 
 ## What's New in v0.0.1
 
