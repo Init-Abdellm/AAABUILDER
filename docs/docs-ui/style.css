@@ -14,6 +14,7 @@ body{margin:0;background:var(--bg);color:var(--text);font:14px/1.6 ui-sans-serif
 .search{display:flex;align-items:center;gap:8px;background:#0c1014;border:1px solid var(--border);padding:6px 8px;border-radius:8px;color:var(--muted)}
 .search input{background:transparent;border:none;outline:none;color:var(--text);width:200px}
 .layout{display:grid;grid-template-columns:260px 1fr;min-height:calc(100vh - 56px)}
+.divider{height:1px;background:var(--border)}
 .sidebar{padding:16px 12px;border-right:1px solid var(--border);background:#0d1116}
 .sidebar .section{margin:16px 8px 6px;color:var(--muted);font-size:12px;text-transform:uppercase}
 .sidebar a{display:block;color:var(--text);text-decoration:none;padding:6px 8px;border-radius:6px}
@@ -39,6 +40,10 @@ body{margin:0;background:var(--bg);color:var(--text);font:14px/1.6 ui-sans-serif
 .code-sample{padding:0 34px 32px}
 .site-footer{border-top:1px solid var(--border);background:#0c1016;color:var(--muted)}
 .footer-inner{display:flex;align-items:center;justify-content:space-between;gap:20px;max-width:1180px;margin:0 auto;padding:16px 24px}
+.footer-brand{display:flex;align-items:center;gap:8px}
+.footer-brand .logo{height:18px;width:auto}
+.footer-name{color:var(--text)}
+.sep{color:var(--muted);margin:0 8px}
 .footer-links a{color:var(--muted);text-decoration:none;margin-right:12px}
 .footer-links a:hover{color:var(--text)}
 @media (max-width:1180px){.features{grid-template-columns:repeat(2,1fr)}}
