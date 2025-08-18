@@ -14,7 +14,7 @@ aaab-create new basic-chatbot my-bot
 ```
 
 Template anatomy
-- Agent: `agents/<name>.agent`
+- Agent: `agents/<name>.agent` (see [`.agent` spec](agent.md))
 - README & config guidance
 - Example inputs
 

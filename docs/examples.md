@@ -17,7 +17,7 @@ See `examples/` for:
 Playground commands
 ```bash
 npm run playground
-agent> load examples/chatbot.agent
+agent> load examples/chatbot.agent   # [`.agent` format](agent.md)
 agent> debug examples/chatbot.agent
 agent> test examples/chatbot.agent
 agent> validate examples/chatbot.agent

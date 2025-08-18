@@ -1,10 +1,10 @@
 AAABuilder — Agent as a Backend
 ================================
 
-AAABuilder is a TypeScript-first framework that turns agent workflows into production-grade backend APIs. Define automation in a `.agent` file, and AAABuilder parses, validates, and executes it via a unified provider system (LLMs, Computer Vision, Audio, Traditional ML), with debugging, testing, and documentation generation built-in.
+AAABuilder is a TypeScript-first framework that turns agent workflows into production-grade backend APIs. Define automation in a [`.agent`](agent.md) file, and AAABuilder parses, validates, and executes it via a unified provider system (LLMs, Computer Vision, Audio, Traditional ML), with debugging, testing, and documentation generation built-in.
 
 Core value
-- **Infra-as-code for agents**: Versioned, reviewable `.agent` files are the contract.
+- **Infra-as-code for agents**: Versioned, reviewable [`.agent`](agent.md) files are the contract.
 - **Unified providers**: Route tasks across OpenAI, Gemini, Hugging Face, Ollama, LLaMA, and traditional ML/CV/audio providers via one interface.
 - **Operational rigor**: Validation, linting, auto-correction, optimized routing, health checks, and structured logging.
 

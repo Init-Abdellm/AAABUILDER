@@ -2,7 +2,7 @@ Parser & Agent Format
 =====================
 
 Enhanced Parser
-- `src/parser/enhanced-parser.ts` parses `.agent` files to AST with error recovery, warnings, and validation.
+- `src/parser/enhanced-parser.ts` parses [`.agent`](agent.md) files to AST with error recovery, warnings, and validation.
 - Supports sections: `description`, `trigger`, `secrets`, `vars`, `steps`, `outputs`.
 
 Minimal example
