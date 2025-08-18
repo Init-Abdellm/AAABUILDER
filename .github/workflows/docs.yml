@@ -1,0 +1,30 @@
+name: Build and Deploy Docs UI
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare website directory
+        run: |
+          rm -rf website
+          mkdir -p website
+          cp -r docs-ui/* website/
+          mkdir -p website/docs
+          cp -r docs/* website/docs/
+
+      - name: Deploy to GitHub Pages (gh-pages)
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: website
+          publish_branch: gh-pages
+          force_orphan: true
+
