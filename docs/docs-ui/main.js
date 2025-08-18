@@ -125,19 +125,20 @@
     }
 
     function attachAnchorLinks() {
-        document.querySelectorAll('h1, h2, h3, h4, h5, h6').forEach(heading => {
-            if (!heading.id) {
-                heading.id = heading.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-            }
-            
-            const link = document.createElement('a');
-            link.href = `#${heading.id}`;
-            link.className = 'anchor-link';
-            link.innerHTML = '<i class="ri-link"></i>';
-            link.setAttribute('aria-label', `Link to ${heading.textContent}`);
-            
-            heading.appendChild(link);
-        });
+        // Remove automatic anchor link generation to fix the extra links issue
+        // document.querySelectorAll('h1, h2, h3, h4, h5, h6').forEach(heading => {
+        //     if (!heading.id) {
+        //         heading.id = heading.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+        //     }
+        //     
+        //     const link = document.createElement('a');
+        //     link.href = `#${heading.id}`;
+        //     link.className = 'anchor-link';
+        //     link.innerHTML = '<i class="ri-link"></i>';
+        //     link.setAttribute('aria-label', `Link to ${heading.textContent}`);
+        //     
+        //     heading.appendChild(link);
+        // });
     }
 
     function renderHome() {
@@ -444,9 +445,22 @@ outputs:
         }
     }
 
+    function toggleSearch() {
+        searchBox.classList.toggle('collapsed');
+        if (!searchBox.classList.contains('collapsed')) {
+            searchInput.focus();
+        }
+    }
+
     function toggleMobileMenu() {
+        console.log('Mobile menu toggle clicked!');
+        console.log('Sidebar element:', sidebar);
+        console.log('Mobile menu toggle element:', mobileMenuToggle);
+        
         sidebar.classList.toggle('open');
         const isOpen = sidebar.classList.contains('open');
+        console.log('Sidebar is now open:', isOpen);
+        
         document.body.classList.toggle('sidebar-open', isOpen);
         if (isOpen) {
             mobileMenuToggle.innerHTML = '<i class="ri-close-line"></i>';
@@ -493,11 +507,16 @@ outputs:
         if (e.key === 'Escape') {
             closeMobileMenu();
             handleSearchClear();
+            // Collapse search box on escape
+            if (searchBox && !searchBox.classList.contains('collapsed')) {
+                searchBox.classList.add('collapsed');
+            }
         }
         
         if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
             e.preventDefault();
             if (searchInput) {
+                searchBox.classList.remove('collapsed');
                 searchInput.focus();
             }
         }
@@ -511,14 +530,27 @@ outputs:
         if (searchResults.classList.contains('visible') && !searchResults.contains(e.target) && !searchInput.contains(e.target)) {
             searchResults.classList.remove('visible');
         }
+        
+        // Collapse search box when clicking outside
+        if (searchBox && !searchBox.classList.contains('collapsed') && 
+            !searchBox.contains(e.target) && !searchToggle.contains(e.target)) {
+            searchBox.classList.add('collapsed');
+        }
     }
 
     function init() {
+        console.log('Initializing...');
+        console.log('Mobile menu toggle element:', mobileMenuToggle);
+        console.log('Sidebar element:', sidebar);
+        
         wireNav();
         setLogos();
         
         if (mobileMenuToggle) {
+            console.log('Adding click event listener to mobile menu toggle');
             mobileMenuToggle.addEventListener('click', toggleMobileMenu);
+        } else {
+            console.error('Mobile menu toggle element not found!');
         }
         
         if (searchInput) {
@@ -528,6 +560,10 @@ outputs:
                     searchResults.classList.add('visible');
                 }
             });
+        }
+        
+        if (searchToggle) {
+            searchToggle.addEventListener('click', toggleSearch);
         }
         
         if (searchClear) {

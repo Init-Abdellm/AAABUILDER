@@ -97,6 +97,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
+  position: relative;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -139,6 +140,8 @@ a:hover {
   z-index: 1000;
   transition: all var(--transition-normal);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  width: 100%;
+  overflow: visible;
 }
 
 .header-container {
@@ -152,6 +155,7 @@ a:hover {
   margin: 0;
   padding: 0 var(--space-6);
   padding-left: 0;
+  overflow: visible;
 }
 
 .brand {
@@ -227,12 +231,15 @@ a:hover {
 .header-actions {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--space-6);
   margin-left: auto;
+  position: relative;
+  z-index: 1001;
 }
 
 .search-container {
   position: relative;
+  z-index: 1001;
 }
 
 .search-box {
@@ -305,6 +312,7 @@ a:hover {
   overflow-y: auto;
   z-index: 1001;
   display: none;
+  overflow-x: hidden;
 }
 
 .search-results.visible {
@@ -342,6 +350,8 @@ a:hover {
   display: flex;
   align-items: center;
   gap: var(--space-3);
+  position: relative;
+  z-index: 1001;
 }
 
 .btn {
@@ -421,6 +431,9 @@ a:hover {
   padding: var(--space-2);
   border-radius: var(--radius-md);
   transition: all var(--transition-fast);
+  position: relative;
+  z-index: 1002;
+  margin-left: auto;
 }
 
 .mobile-menu-toggle:hover {
@@ -433,6 +446,8 @@ a:hover {
   grid-template-columns: var(--sidebar-width) 1fr;
   min-height: calc(100vh - var(--header-height));
   margin-top: var(--header-height);
+  position: relative;
+  overflow-x: hidden;
 }
 
 .sidebar {
@@ -442,10 +457,14 @@ a:hover {
   position: sticky;
   top: var(--header-height);
   height: calc(100vh - var(--header-height));
+  z-index: 999;
 }
 
 .sidebar-content {
   padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .sidebar-section {
@@ -497,10 +516,34 @@ a:hover {
   text-align: center;
 }
 
+/* Mobile action buttons in sidebar */
+.mobile-actions {
+  margin-top: auto;
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--border-primary);
+  display: none;
+}
+
+.mobile-action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.mobile-action-buttons .btn {
+  width: 100%;
+  justify-content: center;
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--font-size-sm);
+  border-radius: var(--radius-lg);
+}
+
 /* ===== MAIN CONTENT ===== */
 .main-content {
   background-color: var(--bg-primary);
   min-height: calc(100vh - var(--header-height));
+  overflow-x: hidden;
+  position: relative;
 }
 
 .content {
@@ -508,6 +551,8 @@ a:hover {
   margin: 0 auto;
   padding: var(--space-8) var(--space-6);
   line-height: var(--line-height-relaxed);
+  position: relative;
+  z-index: 1;
 }
 
 /* ===== CONTENT STYLES ===== */
@@ -850,27 +895,94 @@ a:hover {
   
   .mobile-menu-toggle {
     display: block;
+    position: relative;
+    z-index: 1003;
+    margin-left: auto;
+    right: 0;
+    cursor: pointer;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: var(--font-size-xl);
+    padding: var(--space-2);
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+  }
+  
+  .mobile-menu-toggle:hover {
+    color: var(--text-primary);
+    background-color: var(--bg-tertiary);
+  }
+  
+  .header-container {
+    justify-content: space-between;
+    padding-right: var(--space-4);
+  }
+  
+  .header-actions {
+    margin-left: 0;
+    position: relative;
+    z-index: 1001;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+  
+  /* Hide action buttons in header on mobile - they appear in sidebar instead */
+  .action-buttons {
+    display: none;
   }
   
   .layout {
     grid-template-columns: 1fr;
     width: 100%;
+    overflow-x: hidden;
+    position: relative;
   }
   
   .sidebar {
-    display: none;
+    visibility: hidden;
+    opacity: 0;
     position: fixed;
     left: -100%;
     top: var(--header-height);
     width: 85vw;
     max-width: 360px;
     z-index: 1001;
-    transition: left var(--transition-normal);
+    transition: left var(--transition-normal), visibility var(--transition-normal), opacity var(--transition-normal);
+    height: calc(100vh - var(--header-height));
+    overflow-y: auto;
+    background-color: var(--bg-secondary);
+    border-right: 1px solid var(--border-primary);
   }
   
   .sidebar.open {
-    display: block;
+    visibility: visible;
+    opacity: 1;
     left: 0;
+  }
+  
+  /* Show mobile action buttons on mobile */
+  .mobile-actions {
+    display: block;
+    margin-top: auto;
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--border-primary);
+  }
+  
+  .mobile-action-buttons {
+    display: flex;
+    flex-direction: row;
+    gap: var(--space-2);
+    justify-content: center;
+  }
+  
+  .mobile-action-buttons .btn {
+    width: auto;
+    justify-content: center;
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--font-size-xs);
+    border-radius: var(--radius-md);
   }
   
   /* Backdrop when sidebar is open */
@@ -887,6 +999,9 @@ a:hover {
   
   .content {
     padding: var(--space-4);
+    position: relative;
+    z-index: 1;
+    overflow-x: hidden;
   }
   
   .hero {
@@ -911,18 +1026,22 @@ a:hover {
 @media (max-width: 768px) {
   .header-container {
     padding: 0 var(--space-4);
+    justify-content: space-between;
   }
   
   .search-box {
-    min-width: 200px;
-  }
-  
-  .action-buttons {
-    gap: var(--space-2);
+    min-width: 180px;
+    max-width: 200px;
+    position: relative;
+    z-index: 1001;
   }
   
   .btn span {
     display: none;
+  }
+  
+  .mobile-menu-toggle {
+    margin-left: auto;
   }
   
   .content {
@@ -948,12 +1067,23 @@ a:hover {
 }
 
 @media (max-width: 480px) {
+  .header-container {
+    padding: 0 var(--space-3);
+    gap: var(--space-3);
+  }
+  
   .search-box {
-    min-width: 160px;
+    min-width: 140px;
+    max-width: 160px;
   }
   
   .brand-text {
     display: none;
+  }
+  
+  .mobile-menu-toggle {
+    margin-left: auto;
+    padding: var(--space-1);
   }
   
   .content h1 {
