@@ -7,6 +7,8 @@
     const searchInput = document.getElementById('search-input');
     const searchClear = document.getElementById('search-clear');
     const searchResults = document.getElementById('search-results');
+    const searchBox = document.getElementById('search-box');
+    const searchToggle = document.getElementById('search-toggle');
     const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
     const sidebar = document.getElementById('sidebar');
     const yearEl = document.getElementById('year');
@@ -14,40 +16,34 @@
     let searchIndex = [];
     let currentSearchQuery = '';
     let searchTimeout = null;
+    const isFileProtocol = typeof window !== 'undefined' && window.location && window.location.protocol === 'file:';
 
     function docsBase() {
         try {
             const path = window.location.pathname;
             if (path.endsWith('/') || path.endsWith('/index.html')) {
-                return 'docs';
+                // If index.html is under docs-ui/, markdown files are one level up
+                // e.g., /docs/docs-ui/index.html → docs live in /docs/
+                return '..';
             }
-            // If running locally with docs/docs-ui/index.html
-            return path.includes('/docs/docs-ui/') ? '..' : 'docs';
+            // If running under docs-ui (locally as /docs/docs-ui/ or on Pages as /docs-ui/)
+            return path.includes('/docs-ui/') ? '..' : 'docs';
         } catch (_) {
-            return 'docs';
+            return '..';
         }
     }
 
     function assetBase() {
         try {
             const path = window.location.pathname;
-            const hostname = window.location.hostname;
-            
-            // GitHub Pages detection
-            if (hostname.includes('github.io')) {
-                // On GitHub Pages, we're in /AAABuilder/docs/docs-ui/
-                return '../docs-assets/';
+            // On GitHub Pages, site root hosts docs-ui and docs under /docs
+            if (path.endsWith('/') || path.endsWith('/index.html')) {
+                return 'docs/';
             }
-            
-            // Local development
-            if (path.includes('/docs/docs-ui/')) {
-                return '../docs-assets/';
-            }
-            
-            // Fallback
-            return 'docs/docs-assets/';
+            // When opened locally from docs/docs-ui/index.html
+            return path.includes('/docs/docs-ui/') ? '../' : 'docs/';
         } catch (_) {
-            return '../docs-assets/';
+            return 'docs/';
         }
     }
 
@@ -65,17 +61,33 @@
 
     async function loadDoc(file) {
         try {
-            contentEl.innerHTML = '<div class="loading-spinner"><div class="spinner"></div><p>Loading...</p></div>';
-            
-            let res = await fetch(`${docsBase()}/${file}`);
-            if (!res.ok && docsBase() === './docs') {
-                res = await fetch(`../docs/${file}`);
+            if (isFileProtocol) {
+                throw new Error('Local file protocol not supported for fetching markdown due to browser CORS. Use a local web server.');
             }
-            
-            if (!res.ok) {
+            contentEl.innerHTML = '<div class="loading-spinner"><div class="spinner"></div><p>Loading...</p></div>';
+
+            // Try multiple fallback locations to work across GH Pages setups
+            const candidates = [
+                `${docsBase()}/${file}`, // ../<file> when running from docs-ui
+                `../docs/${file}`,       // fallback when served from site root
+                `docs/${file}`,          // if index at root and docs under /docs
+                `${file}`                // same directory (rare)
+            ];
+
+            let res;
+            for (const url of candidates) {
+                try {
+                    res = await fetch(url);
+                    if (res.ok) break;
+                } catch (_) {
+                    // ignore and try next
+                }
+            }
+
+            if (!res || !res.ok) {
                 throw new Error(`Failed to load ${file}`);
             }
-            
+
             const txt = await res.text();
             contentEl.innerHTML = marked.parse(txt);
             highlightCode();
@@ -299,6 +311,8 @@ outputs:
                 const link = [...document.querySelectorAll('[data-doc]')].find(l => l.getAttribute('data-doc') === doc);
                 setActive(link);
                 location.hash = `#${doc}`;
+                // Close mobile menu after navigating
+                closeMobileMenu();
             });
         });
 
@@ -313,6 +327,8 @@ outputs:
                 const link = [...document.querySelectorAll('[data-doc]')].find(l => l.getAttribute('data-doc') === doc);
                 setActive(link);
                 location.hash = `#${doc}`;
+                // Close mobile menu after navigating
+                closeMobileMenu();
             } else if (href.startsWith('#')) {
                 // in-page anchor: do not trigger doc reload
                 // allow default which updates hash and browser scroll
@@ -327,6 +343,8 @@ outputs:
                 const doc = link.getAttribute('data-doc');
                 setActive(link);
                 location.hash = `#${doc}`;
+                // Close mobile menu after navigating
+                closeMobileMenu();
             });
         });
 
@@ -335,12 +353,17 @@ outputs:
                 ev.preventDefault();
                 history.pushState({ page: 'home' }, '', `#home`);
                 renderHome();
+                // Close mobile menu after navigating
+                closeMobileMenu();
             });
         }
     }
 
     async function buildIndex() {
         try {
+            if (isFileProtocol) {
+                return [];
+            }
             const files = [
                 'Idea.md', 'agent.md', 'index.md', 'quickstart.md', 'architecture.md', 
                 'cli.md', 'providers.md', 'parser.md', 'server.md', 'examples.md', 
@@ -349,15 +372,27 @@ outputs:
             
             const results = await Promise.all(files.map(async f => {
                 try {
-                    let res = await fetch(`${docsBase()}/${f}`);
-                    if (!res.ok && docsBase() === './docs') {
-                        res = await fetch(`../docs/${f}`);
+                    const candidates = [
+                        `${docsBase()}/${f}`,
+                        `../docs/${f}`,
+                        `docs/${f}`,
+                        `${f}`
+                    ];
+
+                    let res;
+                    for (const url of candidates) {
+                        try {
+                            res = await fetch(url);
+                            if (res.ok) break;
+                        } catch (_) {
+                            // ignore and try next
+                        }
                     }
-                    
-                    if (!res.ok) {
+
+                    if (!res || !res.ok) {
                         return { file: f, text: '', title: f.replace('.md', '') };
                     }
-                    
+
                     const text = await res.text();
                     return { file: f, text: text.toLowerCase(), title: f.replace('.md', '') };
                 } catch (_) {
@@ -438,6 +473,8 @@ outputs:
                         if (searchInput) searchInput.value = '';
                         if (searchClear) searchClear.classList.remove('visible');
                         currentSearchQuery = '';
+                        // Close mobile menu after navigating
+                        closeMobileMenu();
                     });
                 });
                 
@@ -542,7 +579,7 @@ outputs:
         
         // Collapse search box when clicking outside
         if (searchBox && !searchBox.classList.contains('collapsed') && 
-            !searchBox.contains(e.target) && !searchToggle.contains(e.target)) {
+            !searchBox.contains(e.target) && (!searchToggle || !searchToggle.contains(e.target))) {
             searchBox.classList.add('collapsed');
         }
     }
@@ -582,16 +619,39 @@ outputs:
         document.addEventListener('keydown', handleKeyboard);
         document.addEventListener('click', handleClickOutside);
         
-        routeFromHash();
-        window.addEventListener('hashchange', routeFromHash);
+        if (isFileProtocol) {
+            // Show helpful message when opened from filesystem
+            if (contentEl) {
+                contentEl.innerHTML = `
+                    <div class="error-message">
+                        <i class="ri-error-warning-line"></i>
+                        <h3>Open with a local server</h3>
+                        <p>You're viewing this file directly from disk (file://). Browsers block loading local markdown files via JavaScript in this mode.</p>
+                        <p>Start a local server from the <code>docs</code> folder, then open <code>/docs-ui/index.html</code>:</p>
+                        <pre><code class="language-bash"># Option 1 (Node)
+npx http-server docs -p 8080 --cors
+
+# Option 2 (Python)
+cd docs
+python -m http.server 8080</code></pre>
+                        <p>Then visit <code>http://localhost:8080/docs-ui/</code>.</p>
+                    </div>
+                `;
+            }
+        } else {
+            routeFromHash();
+            window.addEventListener('hashchange', routeFromHash);
+        }
         
         if (yearEl) {
             yearEl.textContent = String(new Date().getFullYear());
         }
         
-        buildIndex().then(idx => {
-            searchIndex = idx;
-        });
+        if (!isFileProtocol) {
+            buildIndex().then(idx => {
+                searchIndex = idx;
+            });
+        }
         
         const style = document.createElement('style');
         style.textContent = `
