@@ -1,0 +1,87 @@
+@agent chatbot v1
+description: "AI-powered chatbot with conversation memory and context awareness"
+
+trigger:
+  type: http
+  method: POST
+  path: /chat
+
+secrets:
+  - name: OLLAMA_URL
+    type: env
+    value: OLLAMA_URL
+
+vars:
+  message:
+    type: string
+    from: input
+    required: true
+  user_id:
+    type: string
+    from: input
+    required: false
+    default: "anonymous"
+  conversation_context:
+    type: string
+    from: input
+    required: false
+    default: ""
+  max_tokens:
+    type: number
+    from: input
+    required: false
+    default: 200
+  temperature:
+    type: number
+    from: input
+    required: false
+    default: 0.7
+
+steps:
+  - id: understand_context
+    type: llm
+    provider: ollama
+    model: qwen2.5-coder:1.5b
+    prompt: |
+      Analyze this conversation context and user message:
+      
+      Context: {conversation_context}
+      User: {message}
+      
+      Determine the intent and extract key information.
+    retries: 2
+    timeout_ms: 15000
+    save: context_analysis
+
+  - id: generate_response
+    type: llm
+    provider: ollama
+    model: deepseek-r1:8b
+    prompt: |
+      You are a helpful AI assistant. Based on the context analysis and user message, provide a natural, helpful response.
+      
+      Context Analysis: {context_analysis}
+      User Message: {message}
+      User ID: {user_id}
+      
+      Respond naturally and helpfully. Keep it under {max_tokens} tokens.
+    retries: 2
+    timeout_ms: 30000
+    save: ai_response
+
+  - id: format_output
+    type: llm
+    provider: ollama
+    model: qwen2.5-coder:1.5b
+    prompt: |
+      Format this AI response for the chatbot interface:
+      
+      Response: {ai_response}
+      
+      Return a clean, well-formatted response ready for the user.
+    retries: 1
+    timeout_ms: 10000
+    save: formatted_response
+
+output: "{formatted_response}"
+@end

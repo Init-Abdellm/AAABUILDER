@@ -31,14 +31,23 @@
     function assetBase() {
         try {
             const path = window.location.pathname;
-            // On GitHub Pages, site root hosts docs-ui and docs under /docs
-            if (path.endsWith('/') || path.endsWith('/index.html')) {
-                return 'docs/';
+            const hostname = window.location.hostname;
+            
+            // GitHub Pages detection
+            if (hostname.includes('github.io')) {
+                // On GitHub Pages, we're in /AAABuilder/docs/docs-ui/
+                return '../docs-assets/';
             }
-            // When opened locally from docs/docs-ui/index.html
-            return path.includes('/docs/docs-ui/') ? '../' : 'docs/';
+            
+            // Local development
+            if (path.includes('/docs/docs-ui/')) {
+                return '../docs-assets/';
+            }
+            
+            // Fallback
+            return 'docs/docs-assets/';
         } catch (_) {
-            return 'docs/';
+            return '../docs-assets/';
         }
     }
 
@@ -49,7 +58,7 @@
 
     function setLogos() {
         document.querySelectorAll('img[data-logo]').forEach(img => {
-            img.src = `${assetBase()}docs-assets/aaab.png`;
+            img.src = `${assetBase()}aaab.png`;
             img.alt = 'AAABuilder logo';
         });
     }

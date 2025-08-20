@@ -1,17 +1,17 @@
 @agent multi-provider-demo v1
 trigger http POST /multi
-secret OPENAI=env:OPENAI_KEY
-secret HF=env:HUGGINGFACE_KEY
+secret OLLAMA_URL=env:OLLAMA_URL
 var topic = input.topic
 var max_length = input.max_length
 
 step research:
   kind llm
-  model gpt-4o
-  provider openai
+  model deepseek
+  provider ollama
   prompt """
     Research the topic: {topic}
     Provide 3 key insights in a structured format.
+    Be comprehensive but concise.
   """
   retries 2
   timeout_ms 45000
@@ -19,12 +19,14 @@ step research:
 
 step summarize:
   kind llm
-  model microsoft/DialoGPT-large
-  provider huggingface
+  model qwen2
+  provider ollama
   when research_data
   prompt """
     Summarize this research in {max_length} words or less:
     {research_data}
+    
+    Make it clear and actionable.
   """
   retries 2
   timeout_ms 60000
@@ -32,13 +34,12 @@ step summarize:
 
 step notify:
   kind http
-  action POST
-  url https://httpbin.org/post
-  headers {"Content-Type": "application/json", "User-Agent": "AAAB/1.0"}
-  body {"topic": "{topic}", "summary": "{summary}", "timestamp": "2024-01-01"}
-  retries 1
-  timeout_ms 10000
-  save notification_result
+  action: POST
+  url: https://httpbin.org/post
+  headers: {"Content-Type": "application/json", "User-Agent": "AAAB/1.0"}
+  retries: 1
+  timeout_ms: 10000
+  save: notification_result
 
 output summary
 @end

@@ -1,0 +1,65 @@
+@agent smart-camera v1
+description: "Smart camera analysis for mobile/web apps"
+trigger http POST /camera
+
+secret OPENAI_API_KEY=env:OPENAI_API_KEY
+
+var image_data = input.image
+var analysis_type = input.type
+var user_question = input.question
+
+step classify_image:
+  kind vision
+  provider openai
+  model gpt-4o-vision
+  input "{image_data}"
+  operation classify
+  when analysis_type == "classify" || analysis_type == "all"
+  save classification
+  retries 2
+  timeout_ms 30000
+
+step detect_objects:
+  kind vision
+  provider yolo
+  model yolo-v8
+  input "{image_data}"
+  operation detect
+  when analysis_type == "detect" || analysis_type == "all"
+  save detected_objects
+  retries 2
+  timeout_ms 45000
+
+step read_text:
+  kind vision
+  provider ocr
+  model tesseract
+  input "{image_data}"
+  operation ocr
+  when analysis_type == "ocr" || analysis_type == "all"
+  save text_content
+  retries 1
+  timeout_ms 20000
+
+step answer_question:
+  kind llm
+  provider openai
+  model gpt-4o
+  prompt """
+    Based on this image analysis, answer the user's question:
+    
+    Classification: {classification}
+    Detected Objects: {detected_objects}
+    Text Content: {text_content}
+    
+    User Question: {user_question}
+    
+    Provide a clear, helpful answer based on what you can see in the image.
+  """
+  when user_question
+  save answer
+  retries 2
+  timeout_ms 30000
+
+output "{classification} | {detected_objects} | {text_content} | {answer}"
+@end

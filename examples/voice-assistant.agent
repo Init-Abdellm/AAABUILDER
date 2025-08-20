@@ -1,0 +1,55 @@
+@agent voice-assistant v1
+description: "Voice assistant for hands-free UI interaction"
+trigger http POST /voice
+
+secret OPENAI_API_KEY=env:OPENAI_API_KEY
+secret OLLAMA_URL=env:OLLAMA_URL
+
+var audio_input = input.audio
+var text_input = input.text
+var command_type = input.command
+var context = input.context
+
+step speech_to_text:
+  kind audio
+  operation stt
+  input "{audio_input}"
+  model whisper-1
+  when audio_input
+  save user_speech
+  retries 2
+  timeout_ms 30000
+
+step understand_intent:
+  kind llm
+  provider ollama
+  model qwen2
+  prompt """
+    Analyze this user input and determine the intent:
+    
+    Spoken Text: {user_speech}
+    Written Text: {text_input}
+    Command Type: {command_type}
+    Context: {context}
+    
+    Determine what the user wants to do and provide an appropriate response.
+    If it's a command, explain what action should be taken.
+    If it's a question, provide a helpful answer.
+  """
+  save intent_response
+  retries 2
+  timeout_ms 45000
+
+step text_to_speech:
+  kind audio
+  operation tts
+  input "{intent_response}"
+  voice nova
+  model tts-1
+  outputPath "voice_response.mp3"
+  save audio_response
+  retries 1
+  timeout_ms 30000
+
+output intent_response
+@end

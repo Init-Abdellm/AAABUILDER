@@ -1,0 +1,80 @@
+@agent multimodal-assistant v1
+description: "Complete multimodal AI assistant for UI applications"
+trigger http POST /multimodal
+
+secret OPENAI_API_KEY=env:OPENAI_API_KEY
+secret OLLAMA_URL=env:OLLAMA_URL
+
+var operation = input.operation
+var text_content = input.text
+var image_file = input.image
+var audio_file = input.audio
+var conversation_history = input.history
+
+step transcribe_speech:
+  kind audio
+  operation stt
+  input "{audio_file}"
+  model whisper-1
+  when operation == "voice" || operation == "multimodal"
+  save transcription
+  retries 2
+  timeout_ms 30000
+
+step analyze_image:
+  kind vision
+  provider openai
+  model gpt-4o-vision
+  input "{image_file}"
+  operation analyze
+  when operation == "vision" || operation == "multimodal"
+  save image_analysis
+  retries 2
+  timeout_ms 45000
+
+step extract_text_ocr:
+  kind vision
+  provider ocr
+  model tesseract
+  input "{image_file}"
+  operation ocr
+  when operation == "ocr" || operation == "multimodal"
+  save extracted_text
+  retries 1
+  timeout_ms 20000
+
+step intelligent_processing:
+  kind llm
+  provider ollama
+  model qwen2
+  prompt """
+    You are an advanced multimodal AI assistant. Process and respond to this information:
+    
+    User Text: {text_content}
+    Speech Transcription: {transcription}
+    Image Analysis: {image_analysis}
+    Extracted Text (OCR): {extracted_text}
+    Conversation History: {conversation_history}
+    Operation Type: {operation}
+    
+    Provide a comprehensive, helpful response that addresses all the available information.
+    Be natural, conversational, and actionable in your response.
+  """
+  save ai_response
+  retries 2
+  timeout_ms 60000
+
+step generate_speech:
+  kind audio
+  operation tts
+  input "{ai_response}"
+  voice alloy
+  model tts-1
+  outputPath "response_audio.mp3"
+  when operation == "voice" || operation == "tts"
+  save speech_file
+  retries 1
+  timeout_ms 30000
+
+output ai_response
+@end

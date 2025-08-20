@@ -5,7 +5,8 @@ const chalk = require('chalk');
 const path = require('path');
 const fs = require('fs');
 
-const parser = require('../lib/parser/parser');
+const legacyParser = require('../lib/parser/parser');
+const enhancedParser = require('../lib/parser/enhanced-parser');
 const validator = require('../lib/validate/validator');
 const linter = require('../lib/validate/linter');
 const corrector = require('../lib/validate/corrector');
@@ -18,6 +19,19 @@ const doctor = require('../lib/cli/doctor');
 
 const program = new Command();
 
+function parseAgentContent(content) {
+  // Prefer enhanced parser; fall back to legacy only on hard error
+  try {
+    const result = enhancedParser.parse(content);
+    if (result && result.ast) {
+      return result.ast;
+    }
+  } catch (e) {
+    logger.debug(`Enhanced parser failed, using legacy parser: ${e.message}`);
+  }
+  return legacyParser.parse(content);
+}
+
 program
   .name('aaab')
   .description('Agent as a Backend - AI agent workflow executor')
@@ -28,6 +42,7 @@ program
   .description('Execute an .agent file')
   .argument('<file>', '.agent file to execute')
   .option('--input <json>', 'Input data as JSON string', '{}')
+  .option('--input-file <path>', 'Path to JSON file for input data')
   .option('--stream', 'Stream provider output when supported')
   .option('--temperature <num>', 'Sampling temperature', parseFloat)
   .option('--top-p <num>', 'Top-p nucleus sampling', parseFloat)
@@ -48,7 +63,7 @@ program
       }
 
       const content = fs.readFileSync(file, 'utf8');
-      const ast = parser.parse(content);
+      const ast = parseAgentContent(content);
 
       // Validate the agent
       try {
@@ -58,8 +73,23 @@ program
         // Continue execution even with validation warnings
       }
 
-      logger.debug(`Input string: "${options.input}"`);
-      const input = JSON.parse(options.input);
+      let inputStr = options.input;
+      if (options.inputFile) {
+        try {
+          inputStr = fs.readFileSync(path.resolve(options.inputFile), 'utf8');
+        } catch (e) {
+          logger.error(`Failed to read --input-file: ${e.message}`);
+          process.exit(1);
+        }
+      }
+      logger.debug(`Input string: "${inputStr}"`);
+      let input;
+      try {
+        input = JSON.parse(inputStr);
+      } catch (e) {
+        logger.error(`Invalid JSON for --input: ${e.message}`);
+        process.exit(1);
+      }
 
       // Execution options forwarded to providers via context
       const execOptions = {
@@ -106,7 +136,7 @@ program
       }
 
       const content = fs.readFileSync(file, 'utf8');
-      const ast = parser.parse(content);
+      const ast = parseAgentContent(content);
       const result = validator.validate(ast);
 
       if (result.valid) {
@@ -136,7 +166,7 @@ program
       }
 
       const content = fs.readFileSync(file, 'utf8');
-      const ast = parser.parse(content);
+      const ast = parseAgentContent(content);
       const issues = linter.lint(ast);
 
       if (issues.length === 0) {
@@ -168,7 +198,7 @@ program
       }
 
       const content = fs.readFileSync(file, 'utf8');
-      const ast = parser.parse(content);
+      const ast = parseAgentContent(content);
       const fixed = corrector.correct(ast);
 
       const outputFile = options.output || file.replace(/\.agent$/, '.fixed.agent');
@@ -274,7 +304,7 @@ program
         logger.info('No .agent files found');
       } else {
         logger.info(`Found ${files.length} .agent file(s):`);
-        files.forEach(file => console.log(`  ${file}`));
+        files.forEach(file => process.stdout.write(`  ${file}\n`));
       }
     } catch (error) {
       logger.error(`List error: ${error.message}`);

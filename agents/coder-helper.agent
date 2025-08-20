@@ -1,28 +1,41 @@
 @agent coder-helper v1
-trigger http POST /code-help
-secret OLLAMA_URL=env:OLLAMA_URL
-var task = input.task
-var language = input.language
+description: "AI coding assistant that provides concise code solutions"
+trigger:
+  type: http
+  method: POST
+  path: /code-help
+secrets:
+  - name: OLLAMA_URL
+    type: env
+    value: OLLAMA_URL
+vars:
+  task:
+    type: string
+    from: input
+    required: true
+  - name: language
+    type: string
+    from: input
+    required: true
+steps:
+  - id: assist
+    kind: llm
+    model: deepseek
+    provider: ollama
+    prompt: |
+      You are a concise senior code assistant.
+      Task: {task}
+      Preferred language: {language}
 
-step assist:
-  kind llm
-  model llama3
-  provider ollama
-  prompt """
-    You are a concise senior code assistant.
-    Task: {task}
-    Preferred language: {language}
-
-    Requirements:
-    - Provide a clear, minimal solution first.
-    - Include a single, self-contained code block.
-    - Add brief bullets for gotchas and time/space complexity if relevant.
-    - If more context is needed, ask 1-2 precise questions at the end.
-  """
-  temperature 0.2
-  retries 2
-  timeout_ms 45000
-  save answer
-
-output answer
+      Requirements:
+      - Provide a clear, minimal solution first.
+      - Include a single, self-contained code block.
+      - Add brief bullets for gotchas and time/space complexity if relevant.
+      - If more context is needed, ask 1-2 precise questions at the end.
+    temperature: 0.2
+    retries: 2
+    timeout_ms: 45000
+    save: answer
+outputs:
+  response: "{answer}"
 @end
