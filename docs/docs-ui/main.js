@@ -54,8 +54,8 @@
 
     function setLogos() {
         document.querySelectorAll('img[data-logo]').forEach(img => {
-            img.src = `${assetBase()}aaab.png`;
-            img.alt = 'AAABuilder logo';
+            img.src = 'https://raw.githubusercontent.com/Init-Abdellm/AAABUILDER/main/docs/docs-assets/aaab.png';
+            img.alt = 'AAABuilder';
         });
     }
 
